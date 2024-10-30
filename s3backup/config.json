@@ -12,6 +12,8 @@
   "services": ["mqtt:want"],
   "init": false,
   "apparmor": true,
+  "image": "ghcr.io/mkohns/hassio-addons/{arch}-s3backup",
+  "url": "https://github.com/mkohns/hassio-addons/s3backup",
   "options": {
       "s3settings_bucketName": "homeassistant",
       "s3settings_endpointUrl": "https://s3.yourhoster.com",
