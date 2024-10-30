@@ -12,7 +12,7 @@
   "services": ["mqtt:want"],
   "init": false,
   "apparmor": true,
-  "image": "ghcr.io/mkohns/hassio-addons/{arch}-s3backup",
+  "image": "ghcr.io/mkohns/{arch}-s3backup",
   "url": "https://github.com/mkohns/hassio-addons/s3backup",
   "options": {
       "s3settings_bucketName": "homeassistant",
