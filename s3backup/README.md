@@ -6,6 +6,8 @@
 [armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
 [i386-shield]: https://img.shields.io/badge/i386-yes-green.svg
 
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/mkohns)
+
 # Home Assistant Add-on: S3 Backup
 
 ## What is it for ?
@@ -26,6 +28,11 @@ Key Features:
 - internal and external MQTT Server support
 
 ![Device Support](mqtt_device_support.png "MQTT Device Support")
+
+## Disclaimer
+This Addon only works 
+- with GPG. Encryption is not optional. You will need a public and private key + passphrase. See Documentation.
+- with an MQTT integration. This is not optional
 
 ## Installation
 
