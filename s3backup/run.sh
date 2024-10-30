@@ -36,6 +36,8 @@ else
     export MQTT_PASSWORD="$(bashio::config 'mqttsettings_pass')"
 fi
 
+. ./check_options.sh
+
 # TOPIC CONFIG
 export STATE_TOPIC="s3backup/state"
 export COMMAND_TOPIC="s3backup/cmd"

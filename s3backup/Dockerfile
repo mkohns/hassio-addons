@@ -11,5 +11,6 @@ RUN chmod a+x /mqtt_discovery.sh
 RUN chmod a+x /start_fake_backup.sh
 RUN chmod a+x /backup_log_parser.sh
 RUN chmod a+x /restore.sh
+RUN chmod a+x /check_options.sh
 
 CMD [ "/run.sh" ]
