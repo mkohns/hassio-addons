@@ -1,0 +1,64 @@
+---
+configuration:
+  s3settings_bucketName:
+    name: S3 Bucketname
+    description: >-
+      Specify the bucket the backup go in.
+  s3settings_endpointUrl:
+    name: S3 Endpoint URL
+    description: >-
+      Specify the full URL of your S3 hoster.
+  s3settings_accessKey:
+    name: S3 AccessKey
+    description: >-
+      Specify your access_key.
+  s3settings_secretKey:
+    name: S3 SecretKey
+    description: >-
+      Specify your secret_key.
+  gpgsettings_fingerprint:
+    name: GPG Fingerprint
+    description: >-
+      The fingerprint id of your public key.
+  gpgsettings_passphrase:
+    name: GPG Passphrase
+    description: >-
+      The passphrase your private key is protected with.
+  gpgsettings_publicKey:
+    name: GPG Public Key Filename
+    description: >-
+      The filename under /ssl of your public key.
+  gpgsettings_privatKey:
+    name: GPG Private Key Filename
+    description: >-
+      The filename under /ssl of your private key.
+  duplicitysettings_sourceDir:
+    name: Duplicity SourceDir
+    description: >-
+      This should typically contain /backup.
+  duplicitysettings_restoreMediaDir:
+    name: Duplicity RestoreDir
+    description: >-
+      The folder under /media to restore your backup.
+  duplicitysettings_incrementalFor:
+    name: Duplicity IncrementFor
+    description: >-
+      Time to increment before making a new full backup.
+  duplicitysettings_removeOlderThan:
+    name: Duplicity Remove Older Than
+    description: >-
+      Removing older backups from S3.
+  mqttsettings_use_internal:
+    name: Use internal MQTT
+  mqttsettings_server:
+    name: MQTT Server Name/IP
+    description: >-
+      The hostname or IP of your mqtt server. Connection will be done on port 1883.
+  mqttsettings_user:
+    name: MQTT Username
+    description: >-
+      The mqtt user.
+  mqttsettings_pass:
+    name: MQTT Password
+    description: >-
+      The password of the mqtt user.
