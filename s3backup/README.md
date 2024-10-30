@@ -27,7 +27,7 @@ Key Features:
 - Backup lifecycle support
 - internal and external MQTT Server support
 
-![Device Support](mqtt_device_support.png "MQTT Device Support")
+![Device Support](https://raw.githubusercontent.com/mkohns/hassio-addons/refs/heads/main/s3backup/mqtt_device_support.png "MQTT Device Support")
 
 ## Disclaimer
 This Addon only works 
