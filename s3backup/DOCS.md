@@ -44,18 +44,18 @@ sub   rsa3072 2024-10-30 [E] [expires: 2026-10-30]
 > Notice the above key id 5F7C581AE8FF77856C625B855D2BACF61ED7F9DF in the output.  
 > In the below example commands, you need to replace the keyid with YOUR key id!
 
-After successful generation, export the keys in pem format with _YOUR_ given key-id in the output
+2. After successful generation, export the keys in pem format with _YOUR_ given key-id in the output
 
 ```
 gpg -a --output public.pem --export 5F7C581AE8FF77856C625B855D2BACF61ED7F9DF
 ```
 
-And same for the private key. GPG will ask you for a passphrase which protects your private key. You need the passphrase later on.
+3. And same for the private key. GPG will ask you for a passphrase which protects your private key. You need the passphrase later on.
 
 ```
 gpg -a --output private.pem --export-secret-key 5F7C581AE8FF77856C625B855D2BACF61ED7F9DF
 ```
-Last, copy both files on your homeassistant instance into the /ssl folder
+4. Last, copy both files on your homeassistant instance into the /ssl folder
 
 That´s all - all prerequisites are set! Congrats!
 
