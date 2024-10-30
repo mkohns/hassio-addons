@@ -10,9 +10,9 @@
 
 ## What is it for ?
 
-This is my first addon! (reminder to myself: better use python next time).
-This addon is a [duplicity](https://duplicity.nongnu.org/vers7/duplicity.1.html) based tool to backup and restore to an S3 Bucket.
-I personaly use [IDrive](https://www.idrive.com/). But I also tested it with [IDrive](https://min.io/)
+This is my first addon! (reminder to myself: better use python next time).  
+This addon is a [duplicity](https://duplicity.nongnu.org/vers7/duplicity.1.html) based tool to backup and restore the homeassistant /backup folder to an S3 bucket.  
+I personaly use [IDrive](https://www.idrive.com/) as an S3 provider. But I also tested it with [Minio](https://min.io/)  
 
 Key Features:
 
@@ -25,13 +25,13 @@ Key Features:
 - Backup lifecycle support
 - internal and external MQTT Server support
 
+![Device Support](mqtt_device_support.png "MQTT Device Support")
 
 ## Installation
 
 Follow these steps to get the add-on installed on your system:
 
-:warning: Important : Make sure you've added my addon repository to your home-assistant addon library : https://github.com/mkohns/hassio-addons
-
+0. Add this repository to your Addon Store: https://github.com/mkohns/hassio-addons
 1. Navigate in your Home Assistant frontend to **Supervisor** -> **Add-on Store**.
 2. Find the "S3Backup" add-on and click it.
 3. Click on the "INSTALL" button.
