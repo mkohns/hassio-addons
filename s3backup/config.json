@@ -1,6 +1,6 @@
 {
   "name": "S3 Backup",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "slug": "s3backup",
   "description": "Backup and restore your homeassistant snapshots to S3 compatible object storage using duplicity with local GPG encryption",
   "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
