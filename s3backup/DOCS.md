@@ -44,6 +44,13 @@ sub   rsa3072 2024-10-30 [E] [expires: 2026-10-30]
 > Notice the above key id 5F7C581AE8FF77856C625B855D2BACF61ED7F9DF in the output.  
 > In the below example commands, you need to replace the keyid with YOUR key id!
 
+1.1 If gpg is not installed in your instance do the following and repeat step 1
+
+```
+ apt update
+ apt install gpg
+```
+
 2. After successful generation, export the keys in pem format with _YOUR_ given key-id in the output
 
 ```
