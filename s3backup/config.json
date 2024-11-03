@@ -1,6 +1,6 @@
 {
   "name": "S3 Backup",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "slug": "s3backup",
   "description": "Backup and restore your homeassistant snapshots to S3 compatible object storage using duplicity with local GPG encryption",
   "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
@@ -12,8 +12,9 @@
   "services": ["mqtt:want"],
   "init": false,
   "apparmor": true,
+  "homeassistant_api": true,
   "image": "ghcr.io/mkohns/{arch}-s3backup",
-  "url": "https://github.com/mkohns/hassio-addons/s3backup",
+  "url": "https://github.com/mkohns/hassio-addons/s3backup",  
   "options": {
       "s3settings_bucketName": "homeassistant",
       "s3settings_endpointUrl": "https://s3.yourhoster.com",

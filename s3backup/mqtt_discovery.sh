@@ -9,7 +9,7 @@ date
 
 sendDiscovery () {
 bashio::log.green "Sending MQTT Discovery to: $MQTT_DISCOVERY_TOPIC" 
-mosquitto_pub -d -h $MQTT_HOST -u $MQTT_USER -P $MQTT_PASSWORD -t "$MQTT_DISCOVERY_TOPIC" -m "$MQTT_DISCOVERY_MSG"
+mosquitto_pub -r -d -h $MQTT_HOST -u $MQTT_USER -P $MQTT_PASSWORD -t "$MQTT_DISCOVERY_TOPIC" -m "$MQTT_DISCOVERY_MSG"
 }
 
 # ACTIVE ENTITY

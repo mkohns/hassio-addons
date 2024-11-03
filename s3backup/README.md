@@ -26,6 +26,7 @@ Key Features:
 - Progress support
 - Backup lifecycle support
 - internal and external MQTT Server support
+- fires events based on changes in /backup
 
 ![Device Support](https://raw.githubusercontent.com/mkohns/hassio-addons/refs/heads/main/s3backup/mqtt_device_support.png "MQTT Device Support")
 

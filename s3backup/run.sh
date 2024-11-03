@@ -76,9 +76,14 @@ bashio::log.green "Trusting the key"
 echo "${GPG_FINGERPRINT}:6:" | gpg --import-ownertrust
 gpg --list-key
 
+# Starting the backup folder watcher
+bashio::log.green "Starting the backup folder watcher"
+. ./watch_backup_folder.sh &
+
 bashio::log.green "Starting the command topic listener"
 bashio::log.green "Sending MQTT LastWill to: $WILL_TOPIC" 
 mosquitto_pub -d -h $MQTT_HOST -u $MQTT_USER -P $MQTT_PASSWORD -t "$WILL_TOPIC" -m "online" -r
+
 
 while read MESSAGE 
 do 
@@ -95,6 +100,7 @@ do
                   --s3-endpoint-url=$ENDPOINT_URL \
                   --log-file backup.log \
                   --archive-dir=/data \
+                  --allow-source-mismatch \
                   backup $SOURCE_DIR $BUCKET_NAME &
 
         # Starting fake backup

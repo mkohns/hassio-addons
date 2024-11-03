@@ -66,6 +66,65 @@ gpg -a --output private.pem --export-secret-key 5F7C581AE8FF77856C625B855D2BACF6
 
 That´s all - all prerequisites are set! Congrats!
 
+## Backup Events
+
+The addon monitors the /backup folder of homeassistant. 
+
+### backup_started
+
+If a new backup is started the event backup_started is fired. 
+A new backup is detected by the existance of a new file within the backup folder. 
+
+### backup_ended
+If a new backup is finished the event backup_ended is fired. 
+The detection is implemented with a file stabilizer. This means, the backup file did not increase in time for 5 seconds. 
+This can be used to start the S3 backup. 
+
+### backup_file_deleted
+If an existing backup file is deleted, the event backup_file_deleted is fired
+
+
+## Automation examples
+
+This is an example automation for a daily homeassistant backup using build-in backup
+
+```
+alias: Daily Full Backup
+description: ""
+triggers:
+  - trigger: time_pattern
+    hours: "01"
+    minutes: "00"
+    seconds: "00"
+conditions: []
+actions:
+  - action: hassio.backup_full
+    metadata: {}
+    data:
+      compressed: true
+mode: single
+```
+
+This automation fires at the end the backup_ended event, which could trigger the S3 backup
+
+```
+alias: S3 Backup if new backup are available
+description: ""
+triggers:
+  - trigger: event
+    event_type: backup_ended
+conditions: []
+actions:
+  - action: button.press
+    metadata: {}
+    data: {}
+    target:
+      entity_id: button.s3backup_backup
+mode: single
+```
+
+This is quite handy, because now the S3 sync is started everytime "someone" or "somewhat" initiates a homeassistant backup.
+
 ## Options
 
 ### S3 Bucketname (s3settings_bucketName)
