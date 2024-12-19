@@ -1,10 +1,8 @@
 ARG BUILD_FROM
-# hadolint ignore=DL3006
-
-FROM golang:1.23.4-bookworm as builder
+FROM $BUILD_FROM as builder
 
 # Argument to get the target platform from Docker
-ARG TARGETPLATFORM
+ARG TARGETPLATFORM="linux/arm64"
 
 # Set default environment variables
 ENV GOOS=linux \
@@ -14,18 +12,12 @@ ENV GOOS=linux \
 # copy the code
 COPY . /go/src/app/
 
-# care for the frontend
-RUN apt update && apt install -y nodejs npm
-RUN npm install -g yarn
 WORKDIR /go/src/app/frontend/slideshow
-RUN ls -alh
-RUN yarn install
-RUN yarn build
+RUN yarn install && yarn build
 
 # care for the server
 WORKDIR /go/src/app
-RUN go mod download
-RUN go mod verify
+RUN go mod download && go mod verify
 RUN case "$TARGETPLATFORM" in \
       "linux/amd64") \
         export GOOS=linux GOARCH=amd64 ;; \
