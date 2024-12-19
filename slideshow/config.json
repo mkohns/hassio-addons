@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "slug": "signalslide",
   "description": "Signal Slideshow",
-  "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+  "arch": ["armv7", "amd64", "aarch64"],
   "startup": "application",
   "boot": "auto",
   "icon": "icon.png",
@@ -29,7 +29,7 @@
   },
   "schema": {
     "SIGNAL_USERNAME": "str",
-    "SIGNAL_PASSWORD": "pass",
+    "SIGNAL_PASSWORD": "password",
     "SIGNAL_ACCOUNTNO": "str",
     "SIGNAL_OUTPUTFOLDER": "str",
     "SIGNAL_THUMBNAILFOLDER": "str",
