@@ -1,6 +1,6 @@
 {
   "name": "Signal Slideshow",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "slug": "signalslide",
   "description": "Signal Slideshow",
   "arch": ["armv7", "amd64", "aarch64"],
@@ -12,7 +12,7 @@
   "ports": {
     "4000/tcp": 4000
   },
-  "map": ["addon_config"],
+  "map": ["addon_config:rw"],
   "services": [],
   "init": false,
   "apparmor": true,
@@ -22,14 +22,14 @@
     "SIGNAL_USERNAME": "signal",
     "SIGNAL_PASSWORD": "test",
     "SIGNAL_ACCOUNTNO": "your_number",
-    "SIGNAL_OUTPUTFOLDER": "images/",
-    "SIGNAL_THUMBNAILFOLDER": "thumbnails/",
+    "SIGNAL_OUTPUTFOLDER": "/config/images/",
+    "SIGNAL_THUMBNAILFOLDER": "/config/thumbnails/",
     "SIGNAL_GROUPID": "your_group_id",
     "SIGNAL_SIGNALWS": "ws://homeassistant.fritz.box:8080/v1/receive/",
     "SIGNAL_SIGNALAPI": "http://homeassistant.fritz.box:8080/",
     "SLIDESHOW_PORT": "4000",
-    "SLIDESHOW_FRONTEND_DIST": "frontend/slideshow/dist/",
-    "SLIDESHOW_CONFIGDIR": "config/"
+    "SLIDESHOW_FRONTEND_DIST": "/dist/",
+    "SLIDESHOW_CONFIGDIR": "/config/"
   },
   "schema": {
     "SIGNAL_USERNAME": "str",
