@@ -1,0 +1,6 @@
+build_from:
+  aarch64: "golang:1.23.4-bookworm"
+  amd64: "golang:1.23.4-bookworm"
+  armhf: "golang:1.23.4-bookworm"
+  armv7: "golang:1.23.4-bookworm"
+  i386: "golang:1.23.4-bookworm"

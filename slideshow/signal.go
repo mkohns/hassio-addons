@@ -92,7 +92,7 @@ func connectToWebSocket(socketURL, username, password string) {
 }
 
 func downloadAttachment(attachmentID, filename, username, password string) bool {
-	url := fmt.Sprintf("http://signal.kohns.eu:80/v1/attachments/%s", attachmentID)
+	url := fmt.Sprintf(signalapi+"v1/attachments/%s", attachmentID)
 
 	// Create the Basic Auth header
 	auth := "Basic " + base64.StdEncoding.EncodeToString([]byte(username+":"+password))
@@ -121,7 +121,7 @@ func downloadAttachment(attachmentID, filename, username, password string) bool 
 	// Check if the content type is an image
 	contentType := resp.Header.Get("Content-Type")
 	if !strings.HasPrefix(contentType, "image/") {
-		log.Printf("Attachment %s is not an image, skipping", filename)
+		log.Printf("Attachment %s is not an image, skipping .. (real type: %s)", filename, contentType)
 		return false
 	}
 

@@ -20,6 +20,7 @@ var port string
 var groupId string
 var frontenddist string
 var signalws string
+var signalapi string
 
 func main() {
 	log.Println("Starting Slideshow Server")
@@ -32,6 +33,7 @@ func main() {
 	loadEnvVariable("SIGNAL_THUMBNAILFOLDER", &thumbnailfolder)
 	loadEnvVariable("SIGNAL_GROUPID", &groupId)
 	loadEnvVariable("SIGNAL_SIGNALWS", &signalws)
+	loadEnvVariable("SIGNAL_SIGNALAPI", &signalapi)
 
 	loadEnvVariable("SLIDESHOW_PORT", &port)
 	loadEnvVariable("SLIDESHOW_CONFIGDIR", &configfolder)

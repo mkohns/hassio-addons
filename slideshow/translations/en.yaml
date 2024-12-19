@@ -1,0 +1,46 @@
+---
+configuration:
+  SIGNAL_USERNAME:
+    name: Signal Username
+    description: >-
+      n/a
+  SIGNAL_PASSWORD:
+    name: Signal Password
+    description: >-
+      n/a
+  SIGNAL_ACCOUNTNO:
+    name: Signal Account Number
+    description: >-
+      n/a
+  SIGNAL_OUTPUTFOLDER:
+    name: Signal Output Folder
+    description: >-
+      n/a
+  SIGNAL_THUMBNAILFOLDER:
+    name: Signal Thumbnail Folder
+    description: >-
+      n/a
+  SIGNAL_GROUPID:
+    name: Signal Group ID
+    description: >-
+      n/a
+  SIGNAL_SIGNALWS:
+    name: Signal Websocket
+    description: >-
+      n/a
+  SIGNAL_SIGNALAPI:
+    name: Signal API
+    description: >-
+      n/a
+  SLIDESHOW_PORT:
+    name: Slideshow Port
+    description: >-
+      n/a
+  SLIDESHOW_FRONTEND_DIST:
+    name: Slideshow Frontend Dist
+    description: >-
+      n/a
+  SLIDESHOW_CONFIGDIR:
+    name: Slideshow Config Directory
+    description: >-
+      n/a
