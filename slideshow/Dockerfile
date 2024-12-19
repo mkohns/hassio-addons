@@ -11,27 +11,6 @@ ENV GOOS=linux \
     GOARCH=amd64 \
     GOARM=""
 
-# Set GOOS, GOARCH, and GOARM based on TARGETPLATFORM
-RUN case "$TARGETPLATFORM" in \
-      "linux/amd64") \
-        export GOOS=linux GOARCH=amd64 ;; \
-      "linux/arm/v6") \
-        export GOOS=linux GOARCH=arm GOARM=6 ;; \
-      "linux/arm/v7") \
-        export GOOS=linux GOARCH=arm GOARM=7 ;; \
-      "linux/386") \
-        export GOOS=linux GOARCH=386 ;; \
-      "linux/arm64") \
-        export GOOS=linux GOARCH=arm64 ;; \
-      *) \
-        echo "Unsupported platform: $TARGETPLATFORM" && exit 1 ;; \
-    esac && \
-    echo "Building for TARGETPLATFORM=$TARGETPLATFORM" && \
-    echo "GOOS=$GOOS" && \
-    echo "GOARCH=$GOARCH" && \
-    if [ -n "$GOARM" ]; then echo "GOARM=$GOARM"; fi
-
-
 # Create appuser.
 ENV USER=appuser
 ENV UID=10001 
@@ -61,7 +40,25 @@ RUN yarn build
 WORKDIR /go/src/app
 RUN go mod download
 RUN go mod verify
-RUN go build -a -tags netgo -ldflags "-w -s" -o app .
+RUN case "$TARGETPLATFORM" in \
+      "linux/amd64") \
+        export GOOS=linux GOARCH=amd64 ;; \
+      "linux/arm/v6") \
+        export GOOS=linux GOARCH=arm GOARM=6 ;; \
+      "linux/arm/v7") \
+        export GOOS=linux GOARCH=arm GOARM=7 ;; \
+      "linux/386") \
+        export GOOS=linux GOARCH=386 ;; \
+      "linux/arm64") \
+        export GOOS=linux GOARCH=arm64 ;; \
+      *) \
+        echo "Unsupported platform: $TARGETPLATFORM" && exit 1 ;; \
+    esac && \
+    echo "Building for TARGETPLATFORM=$TARGETPLATFORM" && \
+    echo "GOOS=$GOOS" && \
+    echo "GOARCH=$GOARCH" && \
+    if [ -n "$GOARM" ]; then echo "GOARM=$GOARM"; fi && \
+    go build -a -tags netgo -ldflags "-w -s" -o app .
 
 FROM scratch
 
