@@ -8,6 +8,10 @@
   "boot": "auto",
   "icon": "icon.png",
   "logo": "logo.png",
+  "host_network": true,
+  "ports": {
+    "4000/tcp": 4000
+  },
   "map": [],
   "services": [],
   "init": false,
@@ -23,7 +27,7 @@
     "SIGNAL_GROUPID": "your_group_id",
     "SIGNAL_SIGNALWS": "ws://homeassistant.fritz.box:8080/v1/receive/",
     "SIGNAL_SIGNALAPI": "http://homeassistant.fritz.box:8080/",
-    "SLIDESHOW_PORT": "7777",
+    "SLIDESHOW_PORT": "4000",
     "SLIDESHOW_FRONTEND_DIST": "frontend/slideshow/dist/",
     "SLIDESHOW_CONFIGDIR": "config/"
   },

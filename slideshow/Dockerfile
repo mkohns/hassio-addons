@@ -11,20 +11,6 @@ ENV GOOS=linux \
     GOARCH=amd64 \
     GOARM=""
 
-# Create appuser.
-ENV USER=appuser
-ENV UID=10001 
-
-# See https://stackoverflow.com/a/55757473/12429735RUN 
-RUN adduser \    
-    --disabled-password \    
-    --gecos "" \    
-    --home "/nonexistent" \    
-    --shell "/sbin/nologin" \    
-    --no-create-home \    
-    --uid "${UID}" \    
-    "${USER}"
-
 # copy the code
 COPY . /go/src/app/
 
@@ -69,7 +55,7 @@ COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=builder /go/src/app/app /bin/app
 COPY --from=builder /go/src/app/frontend/slideshow/dist /dist
 
-# Use an unprivileged user.
-USER appuser:appuser
+# Use an rivileged user because options.json is owned by root
+USER root:root
 
 ENTRYPOINT [ "/bin/app" ]
