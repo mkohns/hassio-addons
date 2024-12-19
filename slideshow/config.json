@@ -1,6 +1,6 @@
 {
   "name": "Signal Slideshow",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "slug": "signalslide",
   "description": "Signal Slideshow",
   "arch": ["armv7", "amd64", "aarch64"],
@@ -12,7 +12,7 @@
   "ports": {
     "4000/tcp": 4000
   },
-  "map": [],
+  "map": ["addon_config"],
   "services": [],
   "init": false,
   "apparmor": true,

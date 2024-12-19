@@ -4,7 +4,7 @@ ARG BUILD_FROM
 FROM golang:1.23.4-bookworm as builder
 
 # Argument to get the target platform from Docker
-ARG TARGETPLATFORM
+ARG TARGETPLATFORM="linux/arm64"
 
 # Set default environment variables
 ENV GOOS=linux \
