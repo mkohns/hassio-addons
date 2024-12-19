@@ -3,32 +3,34 @@ ARG BUILD_FROM
 
 FROM golang:1.23.4-bookworm as builder
 
-# Set build arguments with default value
-ARG ARCH=amd64
+# Argument to get the target platform from Docker
+ARG TARGETPLATFORM
 
-# Set default architecture
-ENV GOARCH=amd64
+# Set default environment variables
+ENV GOOS=linux \
+    GOARCH=amd64 \
+    GOARM=""
 
-# Translate matrix.arch to goarch
-RUN case ${ARCH} in \
-        amd64) export GOARCH=amd64 ;; \
-        x86_64) export GOARCH=amd64 ;; \
-        armv7) export GOARCH=arm ;; \
-        armv6) export GOARCH=arm ;; \
-        arm64) export GOARCH=arm64 ;; \
-        aarch64) export GOARCH=arm64 ;; \
-        386) export GOARCH=386 ;; \
-        i386) export GOARCH=386 ;; \
-        riscv64) export GOARCH=riscv64 ;; \
-        ppc64le) export GOARCH=ppc64le ;; \
-        s390x) export GOARCH=s390x ;; \
-        mips) export GOARCH=mips ;; \
-        mipsle) export GOARCH=mipsle ;; \
-        mips64) export GOARCH=mips64 ;; \
-        mips64le) export GOARCH=mips64le ;; \
-        *) echo "Unsupported architecture ${MATRIX_ARCH}" >&2; exit 1 ;; \
+# Set GOOS, GOARCH, and GOARM based on TARGETPLATFORM
+RUN case "$TARGETPLATFORM" in \
+      "linux/amd64") \
+        export GOOS=linux GOARCH=amd64 ;; \
+      "linux/arm/v6") \
+        export GOOS=linux GOARCH=arm GOARM=6 ;; \
+      "linux/arm/v7") \
+        export GOOS=linux GOARCH=arm GOARM=7 ;; \
+      "linux/386") \
+        export GOOS=linux GOARCH=386 ;; \
+      "linux/arm64") \
+        export GOOS=linux GOARCH=arm64 ;; \
+      *) \
+        echo "Unsupported platform: $TARGETPLATFORM" && exit 1 ;; \
     esac && \
-    echo "Building for GOARCH=${GOARCH}"
+    echo "Building for TARGETPLATFORM=$TARGETPLATFORM" && \
+    echo "GOOS=$GOOS" && \
+    echo "GOARCH=$GOARCH" && \
+    if [ -n "$GOARM" ]; then echo "GOARM=$GOARM"; fi
+
 
 # Create appuser.
 ENV USER=appuser
@@ -59,7 +61,7 @@ RUN yarn build
 WORKDIR /go/src/app
 RUN go mod download
 RUN go mod verify
-RUN GOOS=linux GOARCH=$GOARCH go build -a -tags netgo -ldflags "-w -s" -o app .
+RUN go build -a -tags netgo -ldflags "-w -s" -o app .
 
 FROM scratch
 
