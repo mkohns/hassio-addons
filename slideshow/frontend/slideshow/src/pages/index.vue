@@ -1,23 +1,47 @@
 <template>
-  <div class="image-container">
+  <div class="image-container" @click="press4times">
     <img
       ref="img1"
       style="opacity: 0"
       :src="imageUrl1"
       class="full-size-image"
-    ></img>
+    />
     <img
       ref="img2"
       style="opacity: 0"
       :src="imageUrl2"
       class="full-size-image"
-    ></img>
-    <div class="overlay" v-if="showOverlay && filename">
+    />
+    <div v-if="showOverlay && filename" class="overlay">
       <p v-if="message">Message: {{ message }}</p>
       <p>Send By: {{ createdBy }}</p>
       <p>Send At: {{ formattedCreatedAt }}</p>
     </div>
   </div>
+  <v-dialog v-model="showMenu" persistent max-width="290">
+    <v-card>
+      <v-card-title>🚀 Menu</v-card-title>
+      <v-card-text>
+        <v-btn width="100%" color="primary" @click="$router.push('/manage')"
+          >Manage Pictures</v-btn
+        >
+        <v-btn
+          width="100%"
+          class="mt-3"
+          @click="$router.push('/config')"
+          color="primary"
+          >Configuration</v-btn
+        >
+        <v-btn
+          width="100%"
+          class="mt-3"
+          @click="showMenu = false"
+          color="primary"
+          >close</v-btn
+        >
+      </v-card-text>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
@@ -46,6 +70,23 @@ const message = ref("");
 const createdBy = ref("");
 const createdAt = ref("");
 const currentImage = ref(1);
+
+let pressCount = 0;
+const showMenu = ref(false);
+
+function press4times() {
+  if (pressCount === 0) {
+    setTimeout(() => {
+      console.log("Resetting press count");
+      pressCount = 0;
+    }, 2000);
+  }
+  pressCount++;
+  if (pressCount === 4) {
+    console.log("Yeah, you got it");
+    showMenu.value = true;
+  }
+}
 
 const formattedCreatedAt = computed(() => {
   if (!createdAt.value) return "";
