@@ -2,6 +2,20 @@ package main
 
 import "time"
 
+type HAConfig struct {
+	SignalUsername        string `json:"SIGNAL_USERNAME"`
+	SignalPassword        string `json:"SIGNAL_PASSWORD"`
+	SignalAccountNo       string `json:"SIGNAL_ACCOUNTNO"`
+	SignalOutputFolder    string `json:"SIGNAL_OUTPUTFOLDER"`
+	SignalThumbnailFolder string `json:"SIGNAL_THUMBNAILFOLDER"`
+	SignalGroupID         string `json:"SIGNAL_GROUPID"`
+	SignalSignalWS        string `json:"SIGNAL_SIGNALWS"`
+	SignalSignalAPI       string `json:"SIGNAL_SIGNALAPI"`
+	SlideshowPort         string `json:"SLIDESHOW_PORT"`
+	SlideshowFrontendDist string `json:"SLIDESHOW_FRONTEND_DIST"`
+	SlideshowConfigDir    string `json:"SLIDESHOW_CONFIGDIR"`
+}
+
 type GroupInfo struct {
 	GroupID   string `json:"groupId"`
 	GroupName string `json:"groupName"`

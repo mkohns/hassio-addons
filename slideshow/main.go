@@ -25,19 +25,49 @@ var signalapi string
 func main() {
 	log.Println("Starting Slideshow Server")
 
-	// loading envrionment variables
-	loadEnvVariable("SIGNAL_USERNAME", &username)
-	loadEnvVariable("SIGNAL_PASSWORD", &password)
-	loadEnvVariable("SIGNAL_ACCOUNTNO", &accountNo)
-	loadEnvVariable("SIGNAL_OUTPUTFOLDER", &outputfolder)
-	loadEnvVariable("SIGNAL_THUMBNAILFOLDER", &thumbnailfolder)
-	loadEnvVariable("SIGNAL_GROUPID", &groupId)
-	loadEnvVariable("SIGNAL_SIGNALWS", &signalws)
-	loadEnvVariable("SIGNAL_SIGNALAPI", &signalapi)
+	// check if running in hassio
+	if FileExists("/data/options.json") {
+		// open options file
+		file, err := os.Open("/data/options.json")
+		if err != nil {
+			log.Panicln("Error opening file:", err)
+		}
+		defer file.Close()
 
-	loadEnvVariable("SLIDESHOW_PORT", &port)
-	loadEnvVariable("SLIDESHOW_CONFIGDIR", &configfolder)
-	loadEnvVariable("SLIDESHOW_FRONTEND_DIST", &frontenddist)
+		// Create a new JSON decoder
+		decoder := json.NewDecoder(file)
+		config := HAConfig{}
+		if err := decoder.Decode(&config); err != nil {
+			log.Panicln("Error decoding options.json:", err.Error())
+		}
+
+		username = config.SignalUsername
+		password = config.SignalPassword
+		accountNo = config.SignalAccountNo
+		outputfolder = config.SignalOutputFolder
+		thumbnailfolder = config.SignalThumbnailFolder
+		groupId = config.SignalGroupID
+		signalws = config.SignalSignalWS
+		signalapi = config.SignalSignalAPI
+
+		port = config.SlideshowPort
+		configfolder = config.SlideshowConfigDir
+		frontenddist = config.SlideshowFrontendDist
+	} else {
+		// loading envrionment variables
+		loadEnvVariable("SIGNAL_USERNAME", &username)
+		loadEnvVariable("SIGNAL_PASSWORD", &password)
+		loadEnvVariable("SIGNAL_ACCOUNTNO", &accountNo)
+		loadEnvVariable("SIGNAL_OUTPUTFOLDER", &outputfolder)
+		loadEnvVariable("SIGNAL_THUMBNAILFOLDER", &thumbnailfolder)
+		loadEnvVariable("SIGNAL_GROUPID", &groupId)
+		loadEnvVariable("SIGNAL_SIGNALWS", &signalws)
+		loadEnvVariable("SIGNAL_SIGNALAPI", &signalapi)
+
+		loadEnvVariable("SLIDESHOW_PORT", &port)
+		loadEnvVariable("SLIDESHOW_CONFIGDIR", &configfolder)
+		loadEnvVariable("SLIDESHOW_FRONTEND_DIST", &frontenddist)
+	}
 
 	// Read the slides from the file
 	slides = readSlides()
@@ -47,6 +77,15 @@ func main() {
 
 	// Start the Echo server
 	startEchoServer()
+}
+
+// FileExists checks if a file exists and is not a directory.
+func FileExists(filePath string) bool {
+	info, err := os.Stat(filePath)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
 
 func loadEnvVariable(envname string, varpointer *string) {

@@ -24,4 +24,5 @@ pnpm-debug.log*
 /images
 /thumbnails
 /config
+/data
 __debug*
