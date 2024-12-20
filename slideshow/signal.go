@@ -88,6 +88,10 @@ func connectToWebSocket(socketURL, username, password string) {
 				log.Println("Got Message with Attachments!")
 
 				for _, attachment := range msg.Envelope.DataMessage.Attachments {
+					if attachment.Filename == "" {
+						log.Println("Attachment has no filename, using ID as filename")
+						attachment.Filename = attachment.ID
+					}
 					if downloadAttachment(attachment.ID, attachment.Filename) {
 						// Append the slide to the list
 						slides = append(slides, Slide{
