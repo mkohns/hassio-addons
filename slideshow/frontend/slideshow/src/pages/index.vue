@@ -1,5 +1,5 @@
 <template>
-  <div class="image-container" @click="press4times">
+  <div class="image-container" @click="toggleActions">
     <img
       ref="img1"
       style="opacity: 0"
@@ -12,36 +12,83 @@
       :src="imageUrl2"
       class="full-size-image"
     />
-    <div v-if="showOverlay && filename" class="overlay">
-      <p v-if="message">Message: {{ message }}</p>
-      <p>Send By: {{ createdBy }}</p>
+    <div v-if="showOverlay && slide" class="overlay">
+      <p v-if="slide.Message">Message: {{ slide.Message }}</p>
+      <p>Send By: {{ slide.CreatedBy }}</p>
       <p>Send At: {{ formattedCreatedAt }}</p>
     </div>
+    <div class="menu-container">
+      <transition
+        enter-active-class="animated animate__slideInLeft"
+        leave-active-class="animated animate__slideOutLeft"
+      >
+        <div @click="close" class="menu-item" v-if="showActions">
+          <v-btn size="x-large" icon="mdi-close"></v-btn
+          ><span class="menu-text">Close Menu</span>
+        </div>
+      </transition>
+
+      <transition
+        enter-active-class="animated animate__slideInLeft item1"
+        leave-active-class="animated animate__slideOutLeft"
+      >
+        <div @click="pause" class="menu-item" v-if="showActions">
+          <v-btn size="x-large" icon="mdi-eye"></v-btn
+          ><span class="menu-text">Pause Image</span>
+        </div>
+      </transition>
+
+      <transition
+        enter-active-class="animated animate__slideInLeft item3"
+        leave-active-class="animated animate__slideOutLeft"
+      >
+        <div @click="favorite" class="menu-item" v-if="showActions">
+          <v-btn size="x-large" icon="mdi-star"></v-btn
+          ><span class="menu-text">Mark as Favorite</span>
+        </div>
+      </transition>
+
+      <transition
+        enter-active-class="animated animate__slideInLeft item4"
+        leave-active-class="animated animate__slideOutLeft"
+      >
+        <div @click="deleteImage" class="menu-item" v-if="showActions">
+          <v-btn size="x-large" icon="mdi-delete"></v-btn
+          ><span class="menu-text">Delete Image</span>
+        </div>
+      </transition>
+
+      <transition
+        enter-active-class="animated animate__slideInLeft item5"
+        leave-active-class="animated animate__slideOutLeft"
+      >
+        <div @click="manage" class="menu-item" v-if="showActions">
+          <v-btn size="x-large" icon="mdi-image-multiple-outline"></v-btn
+          ><span class="menu-text">Manage Images</span>
+        </div>
+      </transition>
+
+      <transition
+        enter-active-class="animated animate__slideInLeft item6"
+        leave-active-class="animated animate__slideOutLeft"
+      >
+        <div @click="settings" class="menu-item" v-if="showActions">
+          <v-btn size="x-large" icon="mdi-cog"></v-btn
+          ><span class="menu-text">Slideshow Settings</span>
+        </div>
+      </transition>
+
+      <transition
+        enter-active-class="animated animate__slideInLeft item7"
+        leave-active-class="animated animate__slideOutLeft"
+      >
+        <div @click="info" class="menu-item" v-if="showActions">
+          <v-btn size="x-large" icon="mdi-information-outline"></v-btn
+          ><span class="menu-text">Info</span>
+        </div>
+      </transition>
+    </div>
   </div>
-  <v-dialog v-model="showMenu" persistent max-width="290">
-    <v-card>
-      <v-card-title>🚀 Menu</v-card-title>
-      <v-card-text>
-        <v-btn width="100%" color="primary" @click="$router.push('/manage')"
-          >Manage Pictures</v-btn
-        >
-        <v-btn
-          width="100%"
-          class="mt-3"
-          @click="$router.push('/config')"
-          color="primary"
-          >Configuration</v-btn
-        >
-        <v-btn
-          width="100%"
-          class="mt-3"
-          @click="showMenu = false"
-          color="primary"
-          >close</v-btn
-        >
-      </v-card-text>
-    </v-card>
-  </v-dialog>
 </template>
 
 <script setup>
@@ -65,44 +112,69 @@ const img2 = ref(null);
 let intervalId;
 const imageUrl1 = ref("");
 const imageUrl2 = ref("");
-const filename = ref("");
-const message = ref("");
-const createdBy = ref("");
-const createdAt = ref("");
+const slide = ref(null);
 const currentImage = ref(1);
 
-let pressCount = 0;
-const showMenu = ref(false);
+const showActions = ref(false);
 
-function press4times() {
-  if (pressCount === 0) {
-    setTimeout(() => {
-      console.log("Resetting press count");
-      pressCount = 0;
-    }, 2000);
-  }
-  pressCount++;
-  if (pressCount === 4) {
-    console.log("Yeah, you got it");
-    showMenu.value = true;
+function toggleActions() {
+  if (!showActions.value) {
+    console.log("Opening menu");
+    showActions.value = true;
+    stopSlideshow();
+  } else {
+    console.log("Closing menu");
+    showActions.value = false;
+    startSlideshow();
   }
 }
 
+function close(evt) {
+  evt.stopPropagation();
+  toggleActions();
+}
+
+function pause(evt) {
+  evt.stopPropagation();
+  console.log("Pausing image");
+}
+
+function favorite(evt) {
+  evt.stopPropagation();
+  console.log("Marking as favorite");
+}
+
+function deleteImage(evt) {
+  evt.stopPropagation();
+  console.log("Deleting image");
+}
+
+function manage(evt) {
+  evt.stopPropagation();
+  console.log("Managing images");
+}
+
+function settings(evt) {
+  evt.stopPropagation();
+  console.log("Slideshow settings");
+}
+
+function info(evt) {
+  evt.stopPropagation();
+  console.log("Info");
+}
+
 const formattedCreatedAt = computed(() => {
-  if (!createdAt.value) return "";
-  const date = new Date(createdAt.value);
+  if (!slide.value) return "";
+  const date = new Date(slide.value.CreatedAt);
   return date.toLocaleString();
 });
 
 const fetchNextSlide = async () => {
   try {
     const response = await axios.get(url + "/nextslide"); // Fetch the next slide
-    const data = response.data;
-    filename.value = data.Filename;
-    message.value = data.Message;
-    createdBy.value = data.CreatedBy;
-    createdAt.value = data.CreatedAt;
-    const newImageUrl = `${url}/${data.ImageURL}`; // Construct the image URL
+    slide.value = response.data;
+    const newImageUrl = `${url}/${slide.value.ImageURL}`; // Construct the image URL
 
     if (currentImage.value === 1) {
       imageUrl2.value = newImageUrl;
@@ -121,20 +193,82 @@ const fetchNextSlide = async () => {
 };
 
 onMounted(() => {
-  interval = store.interval * 1000;
-  showOverlay = store.showOverlay;
-
-  fetchNextSlide(); // Fetch the next slide immediately
-  console.log("Setting up interval", interval);
-  intervalId = setInterval(fetchNextSlide, interval); // Set up the interval
+  startSlideshow();
 });
 
-onUnmounted(() => {
+function startSlideshow() {
+  fetchNextSlide();
+  interval = store.interval * 1000;
+  showOverlay = store.showOverlay;
+  console.log("Starting slideshow");
+  console.log("Setting up interval", interval);
+  intervalId = setInterval(fetchNextSlide, interval);
+}
+
+function stopSlideshow() {
+  console.log("Stopping slideshow");
   clearInterval(intervalId);
+}
+
+onUnmounted(() => {
+  stopSlideshow();
 });
 </script>
 
 <style scoped>
+.menu-container {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0; /* Adjust as needed */
+}
+.animated {
+  -webkit-animation-duration: 1s;
+  animation-duration: 1s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+}
+.item1 {
+  -webkit-animation-delay: 0.2s;
+  animation-delay: 0.2s;
+}
+.item2 {
+  -webkit-animation-delay: 0.3s;
+  animation-delay: 0.3s;
+}
+.item3 {
+  -webkit-animation-delay: 0.4s;
+  animation-delay: 0.4s;
+}
+.item4 {
+  -webkit-animation-delay: 0.5s;
+  animation-delay: 0.5s;
+}
+.item5 {
+  -webkit-animation-delay: 0.6s;
+  animation-delay: 0.6s;
+}
+.item6 {
+  -webkit-animation-delay: 0.7s;
+  animation-delay: 0.7s;
+}
+.item7 {
+  -webkit-animation-delay: 0.8s;
+  animation-delay: 0.8s;
+}
+
+.menu-text {
+  margin-left: 10px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: black;
+}
+
+.menu-item {
+  background-color: rgba(255, 255, 255, 0.346);
+  padding: 10px;
+}
+
 .full-size-image {
   width: 100vw;
   height: 100vh;
