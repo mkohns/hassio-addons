@@ -35,8 +35,10 @@ RUN case "$TARGETPLATFORM" in \
     echo "Building for TARGETPLATFORM=$TARGETPLATFORM" && \
     echo "GOOS=$GOOS" && \
     echo "GOARCH=$GOARCH" && \
+    VERSION=$(jq -r '.version' config.json) && \
+    GITHASH=$(git rev-parse --short HEAD) && \
     if [ -n "$GOARM" ]; then echo "GOARM=$GOARM"; fi && \
-    go build -a -tags netgo -ldflags "-w -s" -o app .
+    go build -a -tags netgo -ldflags "-w -s -X main.addon_version=$VERSION -X main.addon_githash=$GITHASH" -o app .
 
 FROM scratch
 

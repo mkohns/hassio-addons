@@ -4,11 +4,15 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
+
+var addon_version string = "not_injected"
+var addon_githash string = "not_injected"
 
 func startEchoServer() {
 	e := echo.New()
@@ -33,9 +37,44 @@ func startEchoServer() {
 	e.GET("/nextslide", nextSlideHandler)
 	e.GET("/slides", slidesHandler)
 	e.DELETE("/slides/:filename", slidesDeleteHandler)
+	e.GET("/info", infoHandler)
 
 	// Start server
 	e.Logger.Fatal(e.Start(":" + port))
+}
+
+func infoHandler(c echo.Context) error {
+	remoteIP := c.RealIP()
+	// get the size of the image directory
+	slidesSize := getDirSize(outputfolder)
+	// get the size of the thumbnail directory
+	slidesSize += getDirSize(thumbnailfolder)
+
+	info := SlideInfo{
+		SlidesCount: len(slides),
+		RemoteIP:    remoteIP,
+		SlidesSize:  slidesSize,
+		Version:     addon_version,
+		GitCommit:   addon_githash,
+	}
+	return c.JSON(http.StatusOK, info)
+}
+
+func getDirSize(path string) int {
+	var size int64
+	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			size += info.Size()
+		}
+		return nil
+	})
+	if err != nil {
+		return 0
+	}
+	return int(size)
 }
 
 func slidesDeleteHandler(c echo.Context) error {
