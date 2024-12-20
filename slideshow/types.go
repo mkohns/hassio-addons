@@ -82,4 +82,11 @@ type Slide struct {
 	Message     string
 	CreatedBy   string
 	CreatedAt   time.Time
+	Enabled     bool
+	Favorite    bool
+}
+
+type SlidePatchBody struct {
+	Enabled  *bool
+	Favorite *bool
 }
