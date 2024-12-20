@@ -98,6 +98,7 @@ func connectToWebSocket(socketURL, username, password string) {
 							CreatedBy:   msg.Envelope.SourceName,
 							CreatedAt:   time.Now(),
 						})
+						sendReaction(msg)
 						saveSlides(slides)
 					}
 					// remove the attachment from the server
@@ -113,6 +114,29 @@ func connectToWebSocket(socketURL, username, password string) {
 		log.Println("Reconnecting to WebSocket...")
 		time.Sleep(1 * time.Second) // Wait before reconnecting
 	}
+}
+
+func doNothing(ctx context.Context, req *http.Request) error {
+	return nil
+}
+
+func sendReaction(msg Message) {
+	intPtr := func(i int) *int { return &i }
+	reaction := "🚀"
+	receipient := msg.Envelope.Source
+	timestamp := msg.Envelope.DataMessage.Timestamp
+	body := signal.PostV1ReactionsNumberJSONRequestBody{
+		Reaction:     &reaction,
+		Recipient:    &receipient,
+		TargetAuthor: &receipient,
+		Timestamp:    intPtr(int(timestamp)),
+	}
+	_, err := signalClient.PostV1ReactionsNumber(context.Background(), accountNo, body, doNothing)
+	if err != nil {
+		log.Println("Error sending reaction:", err)
+		return
+	}
+	log.Println("Reaction sent successfully")
 }
 
 func removeAttachment(attachmentID string) error {
