@@ -18,6 +18,8 @@ import (
 	"github.com/nfnt/resize"
 )
 
+// SWAGGER: https://bbernhard.github.io/signal-cli-rest-api/
+
 func connectToWebSocket(socketURL, username, password string) {
 	for {
 		u, err := url.Parse(socketURL)
@@ -81,6 +83,11 @@ func connectToWebSocket(socketURL, username, password string) {
 						})
 						saveSlides(slides)
 					}
+					// remove the attachment from the server
+					err := removeAttachment(attachment.ID, username, password)
+					if err != nil {
+						log.Println("Error removing attachment:", err)
+					}
 				}
 			}
 
@@ -89,6 +96,41 @@ func connectToWebSocket(socketURL, username, password string) {
 		log.Println("Reconnecting to WebSocket...")
 		time.Sleep(1 * time.Second) // Wait before reconnecting
 	}
+}
+
+func removeAttachment(attachmentID, username, password string) error {
+	url := fmt.Sprintf(signalapi+"v1/attachments/%s", attachmentID)
+
+	// Create the Basic Auth
+	auth := "Basic " + base64.StdEncoding.EncodeToString([]byte(username+":"+password))
+
+	// Create a new request
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		log.Println("Error creating request:", err)
+		return err
+	}
+
+	// Add the Authorization header
+	req.Header.Add("Authorization", auth)
+
+	// Perform the request with a timeout
+	client := &http.Client{
+		Timeout: 10 * time.Second, // Set the connection timeout
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Error removing attachment:", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("error removing attachment: %s", resp.Status)
+	}
+
+	log.Printf("Attachment %s removed successfully", attachmentID)
+	return nil
 }
 
 func downloadAttachment(attachmentID, filename, username, password string) bool {
