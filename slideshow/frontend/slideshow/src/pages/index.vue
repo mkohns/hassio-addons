@@ -22,7 +22,7 @@
         enter-active-class="animated animate__slideInLeft"
         leave-active-class="animated animate__slideOutLeft"
       >
-        <div @click="close" class="menu-item" v-if="showActions">
+        <div @click="close" class="menu-item-top" v-if="showActions">
           <v-btn size="x-large" icon="mdi-close"></v-btn
           ><span class="menu-text">Close Menu</span>
         </div>
@@ -82,7 +82,7 @@
         enter-active-class="animated animate__slideInLeft item7"
         leave-active-class="animated animate__slideOutLeft"
       >
-        <div @click="info" class="menu-item" v-if="showActions">
+        <div @click="info" class="menu-item-bottom" v-if="showActions">
           <v-btn size="x-large" icon="mdi-information-outline"></v-btn
           ><span class="menu-text">Info</span>
         </div>
@@ -265,6 +265,18 @@ onUnmounted(() => {
 }
 
 .menu-item {
+  background-color: rgba(255, 255, 255, 0.346);
+  padding: 10px;
+}
+
+.menu-item-top {
+  border-radius: 0 50px 0 0;
+  background-color: rgba(255, 255, 255, 0.346);
+  padding: 10px;
+}
+
+.menu-item-bottom {
+  border-radius: 0 0 50px;
   background-color: rgba(255, 255, 255, 0.346);
   padding: 10px;
 }
