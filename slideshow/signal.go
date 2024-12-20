@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -16,9 +17,25 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/nfnt/resize"
+	"kohns.eu/signal2S3/signal"
 )
 
 // SWAGGER: https://bbernhard.github.io/signal-cli-rest-api/
+
+var httpClient *http.Client = nil
+var signalClient *signal.ClientWithResponses = nil
+
+func InitClient(baseurl string) {
+	httpClient = &http.Client{
+		Timeout: 10 * time.Second, // Set the connection timeout
+	}
+	var err error
+
+	signalClient, err = signal.NewClientWithResponses(baseurl, signal.WithHTTPClient(httpClient))
+	if err != nil {
+		log.Panicln("Error creating signal client:", err)
+	}
+}
 
 func connectToWebSocket(socketURL, username, password string) {
 	for {
@@ -71,7 +88,7 @@ func connectToWebSocket(socketURL, username, password string) {
 				log.Println("Got Message with Attachments!")
 
 				for _, attachment := range msg.Envelope.DataMessage.Attachments {
-					if downloadAttachment(attachment.ID, attachment.Filename, username, password) {
+					if downloadAttachment(attachment.ID, attachment.Filename) {
 						// Append the slide to the list
 						slides = append(slides, Slide{
 							Filename:    attachment.Filename,
@@ -84,7 +101,7 @@ func connectToWebSocket(socketURL, username, password string) {
 						saveSlides(slides)
 					}
 					// remove the attachment from the server
-					err := removeAttachment(attachment.ID, username, password)
+					err := removeAttachment(attachment.ID)
 					if err != nil {
 						log.Println("Error removing attachment:", err)
 					}
@@ -98,78 +115,42 @@ func connectToWebSocket(socketURL, username, password string) {
 	}
 }
 
-func removeAttachment(attachmentID, username, password string) error {
-	url := fmt.Sprintf(signalapi+"v1/attachments/%s", attachmentID)
-
-	// Create the Basic Auth
-	auth := "Basic " + base64.StdEncoding.EncodeToString([]byte(username+":"+password))
-
-	// Create a new request
-	req, err := http.NewRequest("DELETE", url, nil)
+func removeAttachment(attachmentID string) error {
+	res, err := signalClient.DeleteV1AttachmentsAttachmentWithResponse(context.Background(), attachmentID)
 	if err != nil {
-		log.Println("Error creating request:", err)
-		return err
+		log.Panicln("Error getting signal about:", err)
 	}
 
-	// Add the Authorization header
-	req.Header.Add("Authorization", auth)
-
-	// Perform the request with a timeout
-	client := &http.Client{
-		Timeout: 10 * time.Second, // Set the connection timeout
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println("Error removing attachment:", err)
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("error removing attachment: %s", resp.Status)
+	if res.StatusCode() != http.StatusNoContent {
+		return fmt.Errorf("error removing attachment: %s", res.Status())
 	}
 
 	log.Printf("Attachment %s removed successfully", attachmentID)
 	return nil
 }
 
-func downloadAttachment(attachmentID, filename, username, password string) bool {
-	url := fmt.Sprintf(signalapi+"v1/attachments/%s", attachmentID)
-
-	// Create the Basic Auth header
-	auth := "Basic " + base64.StdEncoding.EncodeToString([]byte(username+":"+password))
-
-	// Create a new request
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		log.Println("Error creating request:", err)
-		return false
-	}
-
-	// Add the Authorization header
-	req.Header.Add("Authorization", auth)
-
-	// Perform the request with a timeout
-	client := &http.Client{
-		Timeout: 10 * time.Second, // Set the connection timeout
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println("Error downloading attachment:", err)
-		return false
-	}
-	defer resp.Body.Close()
-
-	// Check if the content type is an image
-	contentType := resp.Header.Get("Content-Type")
-	if !strings.HasPrefix(contentType, "image/") {
-		log.Printf("Attachment %s is not an image, skipping .. (real type: %s)", filename, contentType)
-		return false
-	}
-
+func downloadAttachment(attachmentID, filename string) bool {
 	// check the filename
 	if !strings.HasSuffix(filename, ".jpg") && !strings.HasSuffix(filename, ".jpeg") && !strings.HasSuffix(filename, ".png") {
 		log.Println("Attachment is not a jpg, jpeg or png file, skipping")
+		return false
+	}
+
+	res, err := signalClient.GetV1AttachmentsAttachment(context.Background(), attachmentID)
+	if err != nil {
+		log.Println("Error getting attachment:", err)
+		return false
+	}
+
+	if res.StatusCode != http.StatusOK {
+		log.Println("Error getting attachment:", res.StatusCode)
+		return false
+	}
+
+	// Check if the content type is an image
+	contentType := res.Header.Get("Content-Type")
+	if !strings.HasPrefix(contentType, "image/") {
+		log.Printf("Attachment %s is not an image, skipping .. (real type: %s)", filename, contentType)
 		return false
 	}
 
@@ -180,7 +161,7 @@ func downloadAttachment(attachmentID, filename, username, password string) bool 
 		return false
 	}
 
-	_, err = io.Copy(file, resp.Body)
+	_, err = io.Copy(file, res.Body)
 	if err != nil {
 		log.Println("Error saving attachment:", err)
 		return false
@@ -198,6 +179,7 @@ func downloadAttachment(attachmentID, filename, username, password string) bool 
 
 	log.Printf("Attachment %s downloaded and processed successfully", filename)
 	return true
+
 }
 
 func createThumbnail(filename string) error {

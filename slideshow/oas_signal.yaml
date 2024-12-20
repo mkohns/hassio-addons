@@ -1,0 +1,1896 @@
+openapi: 3.0.1
+info:
+  title: Signal Cli REST API
+  description: This is the Signal Cli REST API documentation.
+  contact: {}
+  version: "1.0"
+servers:
+  - url: http://localhost:8080/
+tags:
+  - name: General
+    description: Some general endpoints.
+  - name: Devices
+    description: Register and link Devices.
+  - name: Accounts
+    description: List registered and linked accounts
+  - name: Groups
+    description: Create, List and Delete Signal Groups.
+  - name: Messages
+    description: Send and Receive Signal Messages.
+  - name: Attachments
+    description: List and Delete Attachments.
+  - name: Profiles
+    description: Update Profile.
+  - name: Identities
+    description: List and Trust Identities.
+  - name: Reactions
+    description: React to messages.
+  - name: Receipts
+    description: Send receipts for messages.
+  - name: Search
+    description: Search the Signal Service.
+  - name: Sticker Packs
+    description: List and Install Sticker Packs
+paths:
+  /v1/about:
+    get:
+      tags:
+        - General
+      summary: Lists general information about the API
+      description: Returns the supported API versions and the internal build nr
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/client.About"
+  /v1/accounts:
+    get:
+      tags:
+        - Accounts
+      summary: List all accounts
+      description: Lists all of the accounts linked or registered
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+  /v1/accounts/{number}/rate-limit-challenge:
+    post:
+      tags:
+        - Accounts
+      summary: Lift rate limit restrictions by solving a captcha.
+      description: 'When running into rate limits, sometimes the limit can be lifted, by solving a CAPTCHA. To get the captcha token, go to https://signalcaptchas.org/challenge/generate.html For the staging environment, use: https://signalcaptchas.org/staging/registration/generate.html. The "challenge_token" is the token from the failed send attempt. The "captcha" is the captcha result, starting with signalcaptcha://'
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.RateLimitChallengeRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content: {}
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v1/accounts/{number}/settings:
+    put:
+      tags:
+        - Accounts
+      summary: Update the account settings.
+      description: Update the account attributes on the signal server.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.UpdateAccountSettingsRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content: {}
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v1/accounts/{number}/username:
+    post:
+      tags:
+        - Accounts
+      summary: Set a username.
+      description: Allows to set the username that should be used for this account. This can either be just the nickname (e.g. test) or the complete username with discriminator (e.g. test.123). Returns the new username with discriminator and the username link.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.SetUsernameRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/client.SetUsernameResponse"
+        "204":
+          description: No Content
+          content: {}
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+    delete:
+      tags:
+        - Accounts
+      summary: Remove a username.
+      description: Delete the username associated with this account.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+          content: {}
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+  /v1/attachments:
+    get:
+      tags:
+        - Attachments
+      summary: List all attachments.
+      description: List all downloaded attachments
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+  /v1/attachments/{attachment}:
+    get:
+      tags:
+        - Attachments
+      summary: Serve Attachment.
+      description: Serve the attachment with the given id
+      parameters:
+        - name: attachment
+          in: path
+          description: Attachment ID
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+    delete:
+      tags:
+        - Attachments
+      summary: Remove attachment.
+      description: Remove the attachment with the given id from filesystem.
+      parameters:
+        - name: attachment
+          in: path
+          description: Attachment ID
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+  /v1/configuration:
+    get:
+      tags:
+        - General
+      summary: List the REST API configuration.
+      description: List the REST API configuration.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Configuration"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+    post:
+      tags:
+        - General
+      summary: Set the REST API configuration.
+      description: Set the REST API configuration.
+      requestBody:
+        description: Configuration
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.Configuration"
+        required: true
+      responses:
+        "204":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v1/configuration/{number}/settings:
+    get:
+      tags:
+        - General
+      summary: List account specific settings.
+      description: List account specific settings.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.TrustModeResponse"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content: {}
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+    post:
+      tags:
+        - General
+      summary: Set account specific settings.
+      description: Set account specific settings.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.TrustModeRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content: {}
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v1/contacts/{number}:
+    get:
+      tags:
+        - Contacts
+      summary: List Contacts
+      description: List all contacts for the given number.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/client.ListContactsResponse"
+    put:
+      tags:
+        - Contacts
+      summary: Updates the info associated to a number on the contact list. If the contact doesn’t exist yet, it will be added.
+      description: Updates the info associated to a number on the contact list.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Contact
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.UpdateContactRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content: {}
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v1/contacts/{number}/sync:
+    post:
+      tags:
+        - Contacts
+      summary: Send a synchronization message with the local contacts list to all linked devices.
+      description: Send a synchronization message with the local contacts list to all linked devices. This command should only be used if this is the primary device.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+          content: {}
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+  /v1/devices/{number}:
+    post:
+      tags:
+        - Devices
+      summary: Links another device to this device.
+      description: Links another device to this device. Only works, if this is the master device.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.AddDeviceRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content: {}
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v1/groups/{number}:
+    get:
+      tags:
+        - Groups
+      summary: List all Signal Groups.
+      description: List all Signal Groups.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/client.GroupEntry"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+    post:
+      tags:
+        - Groups
+      summary: Create a new Signal Group.
+      description: Create a new Signal Group with the specified members.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Input Data
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.CreateGroupRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.CreateGroupResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v1/groups/{number}/{groupid}:
+    get:
+      tags:
+        - Groups
+      summary: List a Signal Group.
+      description: List a specific Signal Group.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+        - name: groupid
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/client.GroupEntry"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+    put:
+      tags:
+        - Groups
+      summary: Update the state of a Signal Group.
+      description: Update the state of a Signal Group.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+        - name: groupid
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Input Data
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.UpdateGroupRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+    delete:
+      tags:
+        - Groups
+      summary: Delete a Signal Group.
+      description: Delete the specified Signal Group.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+        - name: groupid
+          in: path
+          description: Group Id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+  /v1/groups/{number}/{groupid}/admins:
+    post:
+      tags:
+        - Groups
+      summary: Add one or more admins to an existing Signal Group.
+      description: Add one or more admins to an existing Signal Group.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+        - name: groupid
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Admins
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.ChangeGroupAdminsRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+    delete:
+      tags:
+        - Groups
+      summary: Remove one or more admins from an existing Signal Group.
+      description: Remove one or more admins from an existing Signal Group.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+        - name: groupid
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Admins
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.ChangeGroupAdminsRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v1/groups/{number}/{groupid}/block:
+    post:
+      tags:
+        - Groups
+      summary: Block a Signal Group.
+      description: Block the specified Signal Group.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+        - name: groupid
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+  /v1/groups/{number}/{groupid}/join:
+    post:
+      tags:
+        - Groups
+      summary: Join a Signal Group.
+      description: Join the specified Signal Group.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+        - name: groupid
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+  /v1/groups/{number}/{groupid}/members:
+    post:
+      tags:
+        - Groups
+      summary: Add one or more members to an existing Signal Group.
+      description: Add one or more members to an existing Signal Group.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+        - name: groupid
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Members
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.ChangeGroupMembersRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+    delete:
+      tags:
+        - Groups
+      summary: Remove one or more members from an existing Signal Group.
+      description: Remove one or more members from an existing Signal Group.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+        - name: groupid
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Members
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.ChangeGroupMembersRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v1/groups/{number}/{groupid}/quit:
+    post:
+      tags:
+        - Groups
+      summary: Quit a Signal Group.
+      description: Quit the specified Signal Group.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+        - name: groupid
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+  /v1/health:
+    get:
+      tags:
+        - General
+      summary: API Health Check
+      description: Internally used by the docker container to perform the health check.
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+  /v1/identities/{number}:
+    get:
+      tags:
+        - Identities
+      summary: List Identities
+      description: List all identities for the given number.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/client.IdentityEntry"
+  /v1/identities/{number}/trust/{numberToTrust}:
+    put:
+      tags:
+        - Identities
+      summary: Trust Identity
+      description: Trust an identity. When 'trust_all_known_keys' is set to' true', all known keys of this user are trusted. **This is only recommended for testing.**
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+        - name: numberToTrust
+          in: path
+          description: Number To Trust
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Input Data
+        content:
+          "*/*":
+            schema:
+              $ref: "#/components/schemas/api.TrustIdentityRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+      x-codegen-request-body-name: data
+  /v1/profiles/{number}:
+    put:
+      tags:
+        - Profiles
+      summary: Update Profile.
+      description: Set your name and optional an avatar.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Profile Data
+        content:
+          "*/*":
+            schema:
+              $ref: "#/components/schemas/api.UpdateProfileRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v1/qrcodelink:
+    get:
+      tags:
+        - Devices
+      summary: Link device and generate QR code.
+      description: Link device and generate QR code
+      parameters:
+        - name: device_name
+          in: query
+          description: Device Name
+          required: true
+          schema:
+            type: string
+        - name: qrcode_version
+          in: query
+          description: QRCode Version (defaults to 10)
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Image
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+  /v1/reactions/{number}:
+    post:
+      tags:
+        - Reactions
+      summary: Send a reaction.
+      description: React to a message
+      parameters:
+        - name: number
+          in: path
+          description: Registered phone number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Reaction
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.Reaction"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+    delete:
+      tags:
+        - Reactions
+      summary: Remove a reaction.
+      description: Remove a reaction
+      parameters:
+        - name: number
+          in: path
+          description: Registered phone number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Reaction
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.Reaction"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v1/receipts/{number}:
+    post:
+      tags:
+        - Receipts
+      summary: Send a receipt.
+      description: Send a read or viewed receipt
+      parameters:
+        - name: number
+          in: path
+          description: Registered phone number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Receipt
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.Receipt"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v1/receive/{number}:
+    get:
+      tags:
+        - Messages
+      summary: Receive Signal Messages.
+      description: Receives Signal Messages from the Signal Network. If you are running the docker container in normal/native mode, this is a GET endpoint. In json-rpc mode this is a websocket endpoint.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+        - name: timeout
+          in: query
+          description: "Receive timeout in seconds (default: 1)"
+          schema:
+            type: string
+        - name: ignore_attachments
+          in: query
+          description: Specify whether the attachments of the received message should be ignored
+          schema:
+            type: string
+        - name: ignore_stories
+          in: query
+          description: Specify whether stories should be ignored when receiving messages
+          schema:
+            type: string
+        - name: max_messages
+          in: query
+          description: "Specify the maximum number of messages to receive (default: unlimited)"
+          schema:
+            type: string
+        - name: send_read_receipts
+          in: query
+          description: Specify whether read receipts should be sent when receiving messages
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+  /v1/register/{number}:
+    post:
+      tags:
+        - Devices
+      summary: Register a phone number.
+      description: Register a phone number with the signal network.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Additional Settings
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.RegisterNumberRequest"
+        required: false
+      responses:
+        "201":
+          description: Created
+          content: {}
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v1/register/{number}/verify/{token}:
+    post:
+      tags:
+        - Devices
+      summary: Verify a registered phone number.
+      description: Verify a registered phone number with the signal network.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+        - name: token
+          in: path
+          description: Verification Code
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Additional Settings
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.VerifyNumberSettings"
+        required: false
+      responses:
+        "201":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v1/search/{number}:
+    get:
+      tags:
+        - Search
+      summary: Check if one or more phone numbers are registered with the Signal Service.
+      description: Check if one or more phone numbers are registered with the Signal Service.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+        - name: numbers
+          in: query
+          description: Numbers to check
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/api.SearchResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+  /v1/send:
+    post:
+      tags:
+        - Messages
+      summary: Send a signal message.
+      description: Send a signal message
+      requestBody:
+        description: Input Data
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.SendMessageV1"
+        required: true
+      responses:
+        "201":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      deprecated: true
+      x-codegen-request-body-name: data
+  /v1/sticker-packs/{number}:
+    get:
+      tags:
+        - Sticker Packs
+      summary: List Installed Sticker Packs.
+      description: List Installed Sticker Packs.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/client.ListInstalledStickerPacksResponse"
+        "204":
+          description: No Content
+          content: {}
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+    post:
+      tags:
+        - Sticker Packs
+      summary: Add Sticker Pack.
+      description: 'In order to add a sticker pack, browse to https://signalstickers.org/ and select the sticker pack you want to add. Then, press the "Add to Signal" button. If you look at the address bar in your browser you should see an URL in this format: https://signal.art/addstickers/#pack_id=XXX&pack_key=YYY, where XXX is the pack_id and YYY is the pack_key.'
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.AddStickerPackRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content: {}
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v1/typing-indicator/{number}:
+    put:
+      tags:
+        - Messages
+      summary: Show Typing Indicator.
+      description: Show Typing Indicator.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Type
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.TypingIndicatorRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+    delete:
+      tags:
+        - Messages
+      summary: Hide Typing Indicator.
+      description: Hide Typing Indicator.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Type
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.TypingIndicatorRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v1/unregister/{number}:
+    post:
+      tags:
+        - Devices
+      summary: Unregister a phone number.
+      description: Disables push support for this device. **WARNING:** If *delete_account* is set to *true*, the account will be deleted from the Signal Server. This cannot be undone without loss.
+      parameters:
+        - name: number
+          in: path
+          description: Registered Phone Number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Additional Settings
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.UnregisterNumberRequest"
+        required: false
+      responses:
+        "204":
+          description: No Content
+          content: {}
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.Error"
+      x-codegen-request-body-name: data
+  /v2/send:
+    post:
+      tags:
+        - Messages
+      summary: Send a signal message.
+      description: "Send a signal message. Set the text_mode to 'styled' in case you want to add formatting to your text message. Styling Options: *italic text*, **bold text**, ~strikethrough text~."
+      requestBody:
+        description: Input Data
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.SendMessageV2"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.SendMessageResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.SendMessageError"
+      x-codegen-request-body-name: data
+components:
+  schemas:
+    api.AddDeviceRequest:
+      type: object
+      properties:
+        uri:
+          type: string
+    api.AddStickerPackRequest:
+      type: object
+      properties:
+        pack_id:
+          type: string
+          example: 9a32eda01a7a28574f2eb48668ae0dc4
+        pack_key:
+          type: string
+          example: 19546e18eba0ff69dea78eb591465289d39e16f35e58389ae779d4f9455aff3a
+    api.ChangeGroupAdminsRequest:
+      type: object
+      properties:
+        admins:
+          type: array
+          items:
+            type: string
+    api.ChangeGroupMembersRequest:
+      type: object
+      properties:
+        members:
+          type: array
+          items:
+            type: string
+    api.Configuration:
+      type: object
+      properties:
+        logging:
+          $ref: "#/components/schemas/api.LoggingConfiguration"
+    api.CreateGroupRequest:
+      type: object
+      properties:
+        description:
+          type: string
+        expiration_time:
+          type: integer
+        group_link:
+          type: string
+          enum:
+            - disabled
+            - enabled
+            - enabled-with-approval
+        members:
+          type: array
+          items:
+            type: string
+        name:
+          type: string
+        permissions:
+          $ref: "#/components/schemas/api.GroupPermissions"
+    api.CreateGroupResponse:
+      type: object
+      properties:
+        id:
+          type: string
+    api.Error:
+      type: object
+      properties:
+        error:
+          type: string
+    api.GroupPermissions:
+      type: object
+      properties:
+        add_members:
+          type: string
+          enum:
+            - only-admins
+            - every-member
+        edit_group:
+          type: string
+          enum:
+            - only-admins
+            - every-member
+    api.LoggingConfiguration:
+      type: object
+      properties:
+        Level:
+          type: string
+    api.RateLimitChallengeRequest:
+      type: object
+      properties:
+        captcha:
+          type: string
+          example: signalcaptcha://{captcha value}
+        challenge_token:
+          type: string
+          example: <challenge token>
+    api.Reaction:
+      type: object
+      properties:
+        reaction:
+          type: string
+        recipient:
+          type: string
+        target_author:
+          type: string
+        timestamp:
+          type: integer
+    api.Receipt:
+      type: object
+      properties:
+        receipt_type:
+          type: string
+          enum:
+            - read
+            - viewed
+        recipient:
+          type: string
+        timestamp:
+          type: integer
+    api.RegisterNumberRequest:
+      type: object
+      properties:
+        captcha:
+          type: string
+        use_voice:
+          type: boolean
+    api.SearchResponse:
+      type: object
+      properties:
+        number:
+          type: string
+        registered:
+          type: boolean
+    api.SendMessageError:
+      type: object
+      properties:
+        account:
+          type: string
+        challenge_tokens:
+          type: array
+          items:
+            type: string
+        error:
+          type: string
+    api.SendMessageResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+    api.SendMessageV1:
+      type: object
+      properties:
+        base64_attachment:
+          type: string
+          example: "'<BASE64 ENCODED DATA>' OR 'data:<MIME-TYPE>;base64,<BASE64 ENCODED DATA>' OR 'data:<MIME-TYPE>;filename=<FILENAME>;base64,<BASE64 ENCODED DATA>'"
+        is_group:
+          type: boolean
+        message:
+          type: string
+        number:
+          type: string
+        recipients:
+          type: array
+          items:
+            type: string
+    api.SendMessageV2:
+      type: object
+      properties:
+        base64_attachments:
+          type: array
+          example:
+            - <BASE64 ENCODED DATA>
+            - data:<MIME-TYPE>;base64<comma><BASE64 ENCODED DATA>
+            - data:<MIME-TYPE>;filename=<FILENAME>;base64<comma><BASE64 ENCODED DATA>
+          items:
+            type: string
+        edit_timestamp:
+          type: integer
+        mentions:
+          type: array
+          items:
+            $ref: "#/components/schemas/data.MessageMention"
+        message:
+          type: string
+        notify_self:
+          type: boolean
+        number:
+          type: string
+        quote_author:
+          type: string
+        quote_mentions:
+          type: array
+          items:
+            $ref: "#/components/schemas/data.MessageMention"
+        quote_message:
+          type: string
+        quote_timestamp:
+          type: integer
+        recipients:
+          type: array
+          items:
+            type: string
+        sticker:
+          type: string
+        text_mode:
+          type: string
+          enum:
+            - normal
+            - styled
+    api.SetUsernameRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          example: test
+    api.TrustIdentityRequest:
+      type: object
+      properties:
+        trust_all_known_keys:
+          type: boolean
+          example: false
+        verified_safety_number:
+          type: string
+    api.TrustModeRequest:
+      type: object
+      properties:
+        trust_mode:
+          type: string
+    api.TrustModeResponse:
+      type: object
+      properties:
+        trust_mode:
+          type: string
+    api.TypingIndicatorRequest:
+      type: object
+      properties:
+        recipient:
+          type: string
+    api.UnregisterNumberRequest:
+      type: object
+      properties:
+        delete_account:
+          type: boolean
+          example: false
+        delete_local_data:
+          type: boolean
+          example: false
+    api.UpdateAccountSettingsRequest:
+      type: object
+      properties:
+        discoverable_by_number:
+          type: boolean
+        share_number:
+          type: boolean
+    api.UpdateContactRequest:
+      type: object
+      properties:
+        expiration_in_seconds:
+          type: integer
+        name:
+          type: string
+        recipient:
+          type: string
+    api.UpdateGroupRequest:
+      type: object
+      properties:
+        base64_avatar:
+          type: string
+        description:
+          type: string
+        expiration_time:
+          type: integer
+        name:
+          type: string
+    api.UpdateProfileRequest:
+      type: object
+      properties:
+        about:
+          type: string
+        base64_avatar:
+          type: string
+        name:
+          type: string
+    api.VerifyNumberSettings:
+      type: object
+      properties:
+        pin:
+          type: string
+    client.About:
+      type: object
+      properties:
+        build:
+          type: integer
+        capabilities:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        mode:
+          type: string
+        version:
+          type: string
+        versions:
+          type: array
+          items:
+            type: string
+    client.GroupEntry:
+      type: object
+      properties:
+        admins:
+          type: array
+          items:
+            type: string
+        blocked:
+          type: boolean
+        id:
+          type: string
+        internal_id:
+          type: string
+        invite_link:
+          type: string
+        members:
+          type: array
+          items:
+            type: string
+        name:
+          type: string
+        pending_invites:
+          type: array
+          items:
+            type: string
+        pending_requests:
+          type: array
+          items:
+            type: string
+    client.IdentityEntry:
+      type: object
+      properties:
+        added:
+          type: string
+        fingerprint:
+          type: string
+        number:
+          type: string
+        safety_number:
+          type: string
+        status:
+          type: string
+    client.ListContactsResponse:
+      type: object
+      properties:
+        blocked:
+          type: boolean
+        color:
+          type: string
+        message_expiration:
+          type: string
+        name:
+          type: string
+        number:
+          type: string
+        profile_name:
+          type: string
+        username:
+          type: string
+        uuid:
+          type: string
+    client.ListInstalledStickerPacksResponse:
+      type: object
+      properties:
+        author:
+          type: string
+        installed:
+          type: boolean
+        pack_id:
+          type: string
+        title:
+          type: string
+        url:
+          type: string
+    client.SetUsernameResponse:
+      type: object
+      properties:
+        username:
+          type: string
+        username_link:
+          type: string
+    data.MessageMention:
+      type: object
+      properties:
+        author:
+          type: string
+        length:
+          type: integer
+        start:
+          type: integer
+x-original-swagger-version: "2.0"

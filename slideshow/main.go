@@ -69,6 +69,9 @@ func main() {
 		loadEnvVariable("SLIDESHOW_FRONTEND_DIST", &frontenddist)
 	}
 
+	// init signal rest client
+	InitClient(signalapi)
+
 	// Read the slides from the file
 	slides = readSlides()
 

@@ -17,7 +17,10 @@ RUN yarn install && yarn build
 
 # care for the server
 WORKDIR /go/src/app
-RUN go mod download && go mod verify
+RUN  go mod download && \
+     go mod verify && \
+     go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest && \     
+     go generate
 RUN case "$TARGETPLATFORM" in \
       "linux/amd64") \
         export GOOS=linux GOARCH=amd64 ;; \

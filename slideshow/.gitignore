@@ -26,3 +26,4 @@ pnpm-debug.log*
 /config
 /data
 __debug*
+signal_client_gen.go
