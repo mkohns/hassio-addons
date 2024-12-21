@@ -101,6 +101,8 @@ func connectToWebSocket(socketURL, username, password string) {
 							Message:     msg.Envelope.DataMessage.Message,
 							CreatedBy:   msg.Envelope.SourceName,
 							CreatedAt:   time.Now(),
+							Enabled:     true,
+							Favorite:    false,
 						})
 						sendReaction(msg)
 						saveSlides(slides)
