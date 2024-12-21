@@ -13,10 +13,8 @@ function onClick(evt) {
   emit("trigger", props.event);
 }
 
-const intial = ref(true);
 const classes = computed(() => {
-  if (intial.value) {
-    intial.value = false;
+  if (props.show === undefined) {
     return {
       "menu-item": true,
       "menu-hide": true,
@@ -44,7 +42,6 @@ const props = defineProps({
     required: true,
   },
   show: {
-    type: Boolean,
     required: true,
   },
   event: {
@@ -61,5 +58,14 @@ const props = defineProps({
 }
 .menu-hide {
   transform: translateX(-100%);
+}
+.menu-text {
+  margin-left: 10px;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: white;
+}
+:deep() .v-btn .mdi-heart {
+  color: red;
 }
 </style>

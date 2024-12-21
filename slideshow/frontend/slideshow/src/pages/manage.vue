@@ -21,9 +21,7 @@
             :headers="headers"
             :items="filteredslides"
             item-value="Filename"
-            show-select
             hide-default-footer
-            v-model="selected"
             class="elevation-1"
           >
             <template #item.TumbnailURL="{ item }">
@@ -32,18 +30,29 @@
             <template #item.CreatedAt="{ item }">
               {{ new Date(item.CreatedAt).toLocaleString() }}
             </template>
+            <template #item.Enabled="{ item }">
+              <v-icon @click="disableImage(item)" v-if="item.Enabled"
+                >mdi-eye</v-icon
+              >
+              <v-icon @click="enableImage(item)" v-else>mdi-eye-off</v-icon>
+            </template>
+            <template #item.Favorite="{ item }">
+              <v-icon
+                @click="unlikeImage(item)"
+                v-if="item.Favorite"
+                color="red"
+                >mdi-heart</v-icon
+              >
+              <v-icon @click="likeImage(item)" v-else>mdi-heart-outline</v-icon>
+            </template>
+            <template #item.Delete="{ item }">
+              <v-icon @click="deleteImage(item)">mdi-trash-can</v-icon>
+            </template>
           </v-data-table>
         </v-container>
         <div class="d-flex">
           <v-spacer></v-spacer>
           <v-btn class="ml-4 mt-8" color="primary" @click="goBack">Back</v-btn>
-          <v-btn
-            :disabled="selected.length == 0"
-            class="ml-4 mt-8"
-            color="primary"
-            @click="deleteImages"
-            >Delete</v-btn
-          >
         </div>
       </v-card-text>
     </v-card>
@@ -69,16 +78,19 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import router from "@/router";
+import backend from "@/api/backend";
 
 const timefilter = ref(false);
 const timefilterSelect = ref(null);
 const slides = ref([]);
 const filteredslides = ref([]);
-const selected = ref([]);
 const headers = [
   { title: "Image", value: "TumbnailURL", sortable: true },
   { title: "Send By", value: "CreatedBy", sortable: true },
   { title: "Send At", value: "CreatedAt", sortable: true },
+  { title: "Active", value: "Enabled", sortable: true },
+  { title: "Favorite", value: "Favorite", sortable: true },
+  { title: "Delete", value: "Delete", sortable: true },
 ];
 
 const goBack = () => {
@@ -90,6 +102,66 @@ if (url === undefined) {
   url = "";
 }
 
+function enableImage(item) {
+  console.log("enable");
+  backend
+    .resumeImage(item.Filename)
+    .then(() => {
+      loadData();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+function disableImage(item) {
+  console.log("disable");
+  backend
+    .pauseImage(item.Filename)
+    .then(() => {
+      loadData();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+function likeImage(item) {
+  console.log("like");
+  backend
+    .like(item.Filename)
+    .then(() => {
+      loadData();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+function unlikeImage(item) {
+  console.log("like");
+  backend
+    .unlike(item.Filename)
+    .then(() => {
+      loadData();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+function deleteImage(item) {
+  console.log("delete");
+  backend
+    .delete(item.Filename)
+    .then(() => {
+      loadData();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
@@ -99,19 +171,6 @@ const observer = new IntersectionObserver((entries) => {
     }
   });
 });
-
-async function deleteImages() {
-  console.log("Delete Slides");
-  for (let i = 0; i < selected.value.length; i++) {
-    const slide = selected.value[i];
-    console.log(slide);
-    let res = await fetch(url + "/slides/" + slide, {
-      method: "DELETE",
-    });
-    console.log(res);
-  }
-  loadData();
-}
 
 function filterReset() {
   console.log(timefilterSelect.value);
@@ -145,7 +204,7 @@ function loadData() {
       if (url !== "") {
         slides.value.forEach((slide) => {
           slide.TumbnailURL = `${url}/${slide.TumbnailURL}`;
-          console.log(slide.TumbnailURL);
+          //console.log(slide.TumbnailURL);
         });
       }
       filteredslides.value = slides.value;

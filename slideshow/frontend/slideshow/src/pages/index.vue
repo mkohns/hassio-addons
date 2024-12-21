@@ -26,8 +26,10 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import axios from "axios";
 import { useSlideshowStore } from "@/stores/slideshow";
 import SideMenu from "@/components/sideMenu.vue";
+import backend from "@/api/backend";
+import router from "@/router";
 
-const menuItems = [
+const menuItems = ref([
   {
     icon: "mdi-close",
     text: "Close Menu",
@@ -63,7 +65,7 @@ const menuItems = [
     text: "Info",
     event: "info",
   },
-];
+]);
 
 const store = useSlideshowStore();
 
@@ -89,6 +91,7 @@ const showActions = ref(false);
 function toggleActions() {
   if (!showActions.value) {
     console.log("Opening menu");
+    updateMenu();
     showActions.value = true;
     stopSlideshow();
   } else {
@@ -131,23 +134,87 @@ function close(evt) {
 }
 
 function pause(evt) {
+  if (!slide.value) return;
   console.log("Pausing image");
+  let item = menuItems.value.find((item) => item.event === "pause");
+  if (item.text === "Pause Image") {
+    item.text = "Resume Image";
+    item.icon = "mdi-eye-off";
+    backend
+      .pauseImage(slide.value.Filename)
+      .then((response) => {
+        console.log("Image paused");
+      })
+      .catch((error) => {
+        console.error("Error pausing image:", error);
+      });
+  } else {
+    item.text = "Pause Image";
+    item.icon = "mdi-eye";
+    backend
+      .resumeImage(slide.value.Filename)
+      .then((response) => {
+        console.log("Image resumed");
+      })
+      .catch((error) => {
+        console.error("Error resuming image:", error);
+      });
+  }
 }
 
 function favorite(evt) {
+  if (!slide.value) return;
   console.log("Marking as favorite");
+  let item = menuItems.value.find((item) => item.event === "favorite");
+  if (item.text === "Mark as Favorite") {
+    item.text = "Unmark as Favorite";
+    item.icon = "mdi-heart";
+    item.color = "red";
+    backend
+      .like(slide.value.Filename)
+      .then((response) => {
+        console.log("Image liked");
+      })
+      .catch((error) => {
+        console.error("Error liking image:", error);
+      });
+  } else {
+    item.text = "Mark as Favorite";
+    item.icon = "mdi-star";
+    item.color = "white";
+    backend
+      .unlike(slide.value.Filename)
+      .then((response) => {
+        console.log("Image unliked");
+      })
+      .catch((error) => {
+        console.error("Error unliking image:", error);
+      });
+  }
 }
 
 function deleteImage(evt) {
+  if (!slide.value) return;
   console.log("Deleting image");
+  backend
+    .delete(slide.value.Filename)
+    .then((response) => {
+      console.log("Image deleted");
+      toggleActions();
+    })
+    .catch((error) => {
+      console.error("Error deleting image:", error);
+    });
 }
 
 function manage(evt) {
   console.log("Managing images");
+  router.push("/manage");
 }
 
 function settings(evt) {
   console.log("Slideshow settings");
+  router.push("/config");
 }
 
 function info(evt) {
@@ -159,6 +226,27 @@ const formattedCreatedAt = computed(() => {
   const date = new Date(slide.value.CreatedAt);
   return date.toLocaleString();
 });
+
+function updateMenu() {
+  if (!slide.value) return;
+  let pausedItem = menuItems.value.find((item) => item.event === "pause");
+  if (slide.value.Enabled) {
+    pausedItem.text = "Pause Image";
+    pausedItem.icon = "mdi-eye";
+  } else {
+    pausedItem.text = "Resume Image";
+    pausedItem.icon = "mdi-eye-off";
+  }
+
+  let favoriteItem = menuItems.value.find((item) => item.event === "favorite");
+  if (slide.value.Favorite) {
+    favoriteItem.text = "Unmark as Favorite";
+    favoriteItem.icon = "mdi-heart";
+  } else {
+    favoriteItem.text = "Mark as Favorite";
+    favoriteItem.icon = "mdi-star";
+  }
+}
 
 const fetchNextSlide = async () => {
   try {
@@ -179,6 +267,9 @@ const fetchNextSlide = async () => {
     }
   } catch (error) {
     console.error("Error fetching next slide:", error);
+    img1.value.style.opacity = 0.0;
+    img2.value.style.opacity = 0.0;
+    slide.value = null;
   }
 };
 
@@ -206,71 +297,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.menu-container {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  left: 0; /* Adjust as needed */
-}
-.animated {
-  -webkit-animation-duration: 1s;
-  animation-duration: 1s;
-  -webkit-animation-fill-mode: both;
-  animation-fill-mode: both;
-}
-.item1 {
-  -webkit-animation-delay: 0.2s;
-  animation-delay: 0.2s;
-}
-.item2 {
-  -webkit-animation-delay: 0.3s;
-  animation-delay: 0.3s;
-}
-.item3 {
-  -webkit-animation-delay: 0.4s;
-  animation-delay: 0.4s;
-}
-.item4 {
-  -webkit-animation-delay: 0.5s;
-  animation-delay: 0.5s;
-}
-.item5 {
-  -webkit-animation-delay: 0.6s;
-  animation-delay: 0.6s;
-}
-.item6 {
-  -webkit-animation-delay: 0.7s;
-  animation-delay: 0.7s;
-}
-.item7 {
-  -webkit-animation-delay: 0.8s;
-  animation-delay: 0.8s;
-}
-
-.menu-text {
-  margin-left: 10px;
-  font-size: 1.3rem;
-  font-weight: bold;
-  color: black;
-}
-
-.menu-item {
-  background-color: rgba(255, 255, 255, 0.346);
-  padding: 10px;
-}
-
-.menu-item-top {
-  border-radius: 0 50px 0 0;
-  background-color: rgba(255, 255, 255, 0.346);
-  padding: 10px;
-}
-
-.menu-item-bottom {
-  border-radius: 0 0 50px;
-  background-color: rgba(255, 255, 255, 0.346);
-  padding: 10px;
-}
-
 .full-size-image {
   width: 100vw;
   height: 100vh;

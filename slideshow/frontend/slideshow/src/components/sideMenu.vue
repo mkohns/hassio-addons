@@ -1,7 +1,7 @@
 <template>
   <div class="menu-container">
     <SideMenuItem
-      v-for="(item, index) in itemsInternal"
+      v-for="item in itemsInternal"
       :icon="item.icon"
       :text="item.text"
       :show="item.show"
@@ -41,7 +41,7 @@ onMounted(() => {
   itemsInternal.value = props.items.map((item) => {
     return {
       ...item,
-      show: false,
+      show: undefined,
     };
   });
 });
@@ -68,6 +68,18 @@ watch(
     }
   }
 );
+
+watch(
+  () => props.items,
+  (newVal, oldVal) => {
+    console.log("Items changed");
+    for (let i = 0; i < props.items.length; i++) {
+      itemsInternal.value[i].icon = props.items[i].icon;
+      itemsInternal.value[i].text = props.items[i].text;
+    }
+  },
+  { deep: true }
+);
 </script>
 
 <style scoped>
@@ -80,7 +92,6 @@ watch(
 .item:first-child {
   border-radius: 0 50px 0 0;
 }
-
 .item:last-child {
   border-radius: 0 0 50px;
 }
