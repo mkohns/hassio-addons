@@ -24,7 +24,6 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import axios from "axios";
 import { useSlideshowStore } from "@/stores/slideshow";
 import SideMenu from "@/components/sideMenu.vue";
 import backend from "@/api/backend";
@@ -84,7 +83,7 @@ const showNewChip = computed(() => {
   const date = new Date(slide.value.CreatedAt);
   const now = new Date();
   const diff = now - date;
-  console.log("Difference:", diff);
+  //console.log("Difference:", diff);
   return diff < 86400000; // 24 hours in milliseconds
 });
 
@@ -259,30 +258,31 @@ function updateMenu() {
   }
 }
 
-const fetchNextSlide = async () => {
-  try {
-    const response = await axios.get(url + "/nextslide"); // Fetch the next slide
-    slide.value = response.data;
-    const newImageUrl = `${url}/${slide.value.ImageURL}`; // Construct the image URL
-
-    if (currentImage.value === 1) {
-      imageUrl2.value = newImageUrl;
+function fetchNextSlide() {
+  backend
+    .nextSlide()
+    .then((response) => {
+      slide.value = response.data;
+      const newImageUrl = `${url}/${slide.value.ImageURL}`;
+      if (currentImage.value === 1) {
+        imageUrl2.value = newImageUrl;
+        img1.value.style.opacity = 0.0;
+        img2.value.style.opacity = 1.0;
+        currentImage.value = 2;
+      } else {
+        imageUrl1.value = newImageUrl;
+        img1.value.style.opacity = 1.0;
+        img2.value.style.opacity = 0.0;
+        currentImage.value = 1;
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching next slide:", error);
       img1.value.style.opacity = 0.0;
-      img2.value.style.opacity = 1.0;
-      currentImage.value = 2;
-    } else {
-      imageUrl1.value = newImageUrl;
-      img1.value.style.opacity = 1.0;
       img2.value.style.opacity = 0.0;
-      currentImage.value = 1;
-    }
-  } catch (error) {
-    console.error("Error fetching next slide:", error);
-    img1.value.style.opacity = 0.0;
-    img2.value.style.opacity = 0.0;
-    slide.value = null;
-  }
-};
+      slide.value = null;
+    });
+}
 
 onMounted(() => {
   startSlideshow();

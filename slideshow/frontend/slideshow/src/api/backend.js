@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useSlideshowStore } from "@/stores/slideshow";
 
 class BackendClient {
   instance = axios.create({
@@ -56,6 +57,24 @@ class BackendClient {
   }
   delete(imageId) {
     return this.instance.delete(`/slides/${imageId}`);
+  }
+  nextSlide() {
+    const store = useSlideshowStore();
+
+    let params = {
+      showOnlyFavorites: store.showOnlyFavorites,
+      showOnlyActive: store.showOnlyActive,
+      showOnlyInTimeFrame: store.showOnlyInTimeFrame,
+      modeRandom: store.modeRandom,
+      modeChronological: store.modeChronological,
+      modeReverseChronological: store.modeReverseChronological,
+      startDate: store.startDate,
+      endDate: store.endDate,
+    };
+
+    console.log(params);
+
+    return this.instance.get(`/nextslide`, { params: params });
   }
 }
 
