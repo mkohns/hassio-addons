@@ -17,77 +17,7 @@
       <p>Send By: {{ slide.CreatedBy }}</p>
       <p>Send At: {{ formattedCreatedAt }}</p>
     </div>
-    <div class="menu-container">
-      <transition
-        enter-active-class="animated animate__slideInLeft"
-        leave-active-class="animated animate__slideOutLeft"
-      >
-        <div @click="close" class="menu-item-top" v-if="showActions">
-          <v-btn size="x-large" icon="mdi-close"></v-btn
-          ><span class="menu-text">Close Menu</span>
-        </div>
-      </transition>
-
-      <transition
-        enter-active-class="animated animate__slideInLeft item1"
-        leave-active-class="animated animate__slideOutLeft"
-      >
-        <div @click="pause" class="menu-item" v-if="showActions">
-          <v-btn size="x-large" icon="mdi-eye"></v-btn
-          ><span class="menu-text">Pause Image</span>
-        </div>
-      </transition>
-
-      <transition
-        enter-active-class="animated animate__slideInLeft item3"
-        leave-active-class="animated animate__slideOutLeft"
-      >
-        <div @click="favorite" class="menu-item" v-if="showActions">
-          <v-btn size="x-large" icon="mdi-star"></v-btn
-          ><span class="menu-text">Mark as Favorite</span>
-        </div>
-      </transition>
-
-      <transition
-        enter-active-class="animated animate__slideInLeft item4"
-        leave-active-class="animated animate__slideOutLeft"
-      >
-        <div @click="deleteImage" class="menu-item" v-if="showActions">
-          <v-btn size="x-large" icon="mdi-delete"></v-btn
-          ><span class="menu-text">Delete Image</span>
-        </div>
-      </transition>
-
-      <transition
-        enter-active-class="animated animate__slideInLeft item5"
-        leave-active-class="animated animate__slideOutLeft"
-      >
-        <div @click="manage" class="menu-item" v-if="showActions">
-          <v-btn size="x-large" icon="mdi-image-multiple-outline"></v-btn
-          ><span class="menu-text">Manage Images</span>
-        </div>
-      </transition>
-
-      <transition
-        enter-active-class="animated animate__slideInLeft item6"
-        leave-active-class="animated animate__slideOutLeft"
-      >
-        <div @click="settings" class="menu-item" v-if="showActions">
-          <v-btn size="x-large" icon="mdi-cog"></v-btn
-          ><span class="menu-text">Slideshow Settings</span>
-        </div>
-      </transition>
-
-      <transition
-        enter-active-class="animated animate__slideInLeft item7"
-        leave-active-class="animated animate__slideOutLeft"
-      >
-        <div @click="info" class="menu-item-bottom" v-if="showActions">
-          <v-btn size="x-large" icon="mdi-information-outline"></v-btn
-          ><span class="menu-text">Info</span>
-        </div>
-      </transition>
-    </div>
+    <SideMenu :items="menuItems" :open="showActions" @trigger="menuTrigger" />
   </div>
 </template>
 
@@ -95,6 +25,45 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import axios from "axios";
 import { useSlideshowStore } from "@/stores/slideshow";
+import SideMenu from "@/components/sideMenu.vue";
+
+const menuItems = [
+  {
+    icon: "mdi-close",
+    text: "Close Menu",
+    event: "close",
+  },
+  {
+    icon: "mdi-eye",
+    text: "Pause Image",
+    event: "pause",
+  },
+  {
+    icon: "mdi-star",
+    text: "Mark as Favorite",
+    event: "favorite",
+  },
+  {
+    icon: "mdi-delete",
+    text: "Delete Image",
+    event: "delete",
+  },
+  {
+    icon: "mdi-image-multiple-outline",
+    text: "Manage Images",
+    event: "manage",
+  },
+  {
+    icon: "mdi-cog",
+    text: "Slideshow Settings",
+    event: "settings",
+  },
+  {
+    icon: "mdi-information-outline",
+    text: "Info",
+    event: "info",
+  },
+];
 
 const store = useSlideshowStore();
 
@@ -129,38 +98,59 @@ function toggleActions() {
   }
 }
 
+function menuTrigger(evt) {
+  switch (evt) {
+    case "close":
+      close(evt);
+      break;
+    case "pause":
+      pause(evt);
+      break;
+    case "favorite":
+      favorite(evt);
+      break;
+    case "delete":
+      deleteImage(evt);
+      break;
+    case "manage":
+      manage(evt);
+      break;
+    case "settings":
+      settings(evt);
+      break;
+    case "info":
+      info(evt);
+      break;
+    default:
+      console.log("Unknown event: " + evt);
+  }
+}
+
 function close(evt) {
-  evt.stopPropagation();
   toggleActions();
 }
 
 function pause(evt) {
-  evt.stopPropagation();
   console.log("Pausing image");
 }
 
 function favorite(evt) {
-  evt.stopPropagation();
   console.log("Marking as favorite");
 }
 
 function deleteImage(evt) {
-  evt.stopPropagation();
   console.log("Deleting image");
 }
 
 function manage(evt) {
-  evt.stopPropagation();
   console.log("Managing images");
 }
 
 function settings(evt) {
-  evt.stopPropagation();
   console.log("Slideshow settings");
 }
 
 function info(evt) {
-  evt.stopPropagation();
   console.log("Info");
 }
 
