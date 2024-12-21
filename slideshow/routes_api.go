@@ -36,7 +36,8 @@ func slidesPatchHandler(c echo.Context) error {
 				slides[i].Enabled = *body.Enabled
 			}
 
-			return slidesHandler(c)
+			saveSlides(slides)
+			return c.NoContent(http.StatusOK)
 		}
 	}
 	return c.String(http.StatusNotFound, "Slide not found")
