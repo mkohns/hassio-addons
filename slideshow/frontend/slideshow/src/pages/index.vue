@@ -1,5 +1,6 @@
 <template>
   <div class="image-container" @click="toggleActions">
+    <v-chip v-if="showNewChip" size="x-large" class="newchip">🔥 NEW</v-chip>
     <img
       ref="img1"
       style="opacity: 0"
@@ -76,6 +77,16 @@ let url = import.meta.env.VITE_BASE_URL;
 if (url === undefined) {
   url = "";
 }
+
+const showNewChip = computed(() => {
+  if (!slide.value) return false;
+  if (store.showNewChip === false) return false;
+  const date = new Date(slide.value.CreatedAt);
+  const now = new Date();
+  const diff = now - date;
+  console.log("Difference:", diff);
+  return diff < 86400000; // 24 hours in milliseconds
+});
 
 const img1 = ref(null);
 const img2 = ref(null);
@@ -316,5 +327,12 @@ onUnmounted(() => {
   color: white;
   padding: 10px;
   box-sizing: border-box;
+}
+
+.newchip {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 100;
 }
 </style>

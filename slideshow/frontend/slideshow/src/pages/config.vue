@@ -29,6 +29,8 @@
         </v-slider>
         <v-switch color="primary" label="Show Overlay" v-model="overlay">
         </v-switch>
+        <v-switch color="primary" label="Show New Indicator" v-model="newchip">
+        </v-switch>
         <v-btn color="primary" @click="saveConfig">Save</v-btn>
         <v-btn class="ml-3" color="primary" @click="goBack">Back</v-btn>
       </v-card-text>
@@ -45,10 +47,12 @@ const store = useSlideshowStore();
 
 let interval = ref(store.interval);
 let overlay = ref(store.showOverlay);
+let newchip = ref(store.showNewChip);
 
 const saveConfig = () => {
   store.setInterval(interval.value);
   store.setShowOverlay(overlay.value);
+  store.setShowNewChip(newchip.value);
   console.log("Config saved");
 };
 
