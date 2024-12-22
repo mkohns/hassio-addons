@@ -1,4 +1,5 @@
 ARG BUILD_FROM
+ARG COMMIT_HASH
 FROM $BUILD_FROM as builder
 
 # Argument to get the target platform from Docker
