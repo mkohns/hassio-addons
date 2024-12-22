@@ -84,7 +84,7 @@ type Message struct {
 }
 
 type Slide struct {
-	Timestamp    int64
+	MsgTimestamp int64
 	AttachmentID string
 	Filename     string
 	ImageURL     string
