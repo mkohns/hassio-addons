@@ -20,7 +20,8 @@ WORKDIR /go/src/app
 RUN go mod download && \
     go mod verify && \
     go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
-RUN ls -alr /go/bin && \
+RUN ls -al /go/bin && \
+    ls -al /go/bin/linux_amd64 && \
     env && \
     oapi-codegen -version && \
     go generate
