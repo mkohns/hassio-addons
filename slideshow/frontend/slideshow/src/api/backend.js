@@ -61,12 +61,6 @@ class BackendClient {
   getInfo() {
     return this.instance.get(`/info`);
   }
-  updateOrientation(portraitMode) {
-    let body = {
-      PortraitMode: portraitMode,
-    };
-    return this.instance.patch(`/portraitMode`, body);
-  }
   nextSlide() {
     const store = useSlideshowStore();
 

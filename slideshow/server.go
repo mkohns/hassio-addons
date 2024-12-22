@@ -34,7 +34,6 @@ func startEchoServer() {
 	e.GET("/slides", slidesHandler)
 	e.DELETE("/slides/:attachmentID", slidesDeleteHandler)
 	e.PATCH("/slides/:attachmentID", slidesPatchHandler)
-	e.PATCH("portraitMode", portraitModeHandler)
 	e.GET("/info", infoHandler)
 
 	// Start server

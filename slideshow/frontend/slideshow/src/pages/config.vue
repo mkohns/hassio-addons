@@ -190,13 +190,6 @@ const saveConfig = () => {
   store.setModeRandom(modeRandom.value);
   store.setModeChronological(modeChronological.value);
   store.setModeReverseChronological(modeReverseChronological.value);
-
-  if (store.portraitMode != portraitMode.value) {
-    // change portrait mode on server
-    backend.updateOrientation(portraitMode.value);
-    store.setPortraitMode(portraitMode.value);
-  }
-
   store.setPortraitMode(portraitMode.value);
 
   if (showOnlyInTimeFrame.value && startDate.value == null) {

@@ -13,7 +13,6 @@ import (
 
 // some global variables
 var randomGenerator = rand.New(rand.NewSource(time.Now().UnixNano()))
-var currentPortraitMode = false
 
 func imageHandler(c echo.Context) error {
 	attachmentID := c.Param("attachmentID")
@@ -31,25 +30,6 @@ func thumbnailHandler(c echo.Context) error {
 		return c.String(http.StatusNotFound, "Slide not found")
 	}
 	return c.File(thumbnailfolder + attachmentID)
-}
-
-func portraitModeHandler(c echo.Context) error {
-	// Get the body
-	body := new(PortraitPatchBody)
-	err := c.Bind(body)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "couldNotRetrieveBody")
-	}
-
-	currentPortraitMode = body.PortraitMode
-
-	currentMode := "Portrait"
-	if !currentPortraitMode {
-		currentMode = "Landscape"
-	}
-	sendMessage("The Bilderrahmen was rearranged to mode: " + currentMode)
-
-	return c.NoContent(http.StatusOK)
 }
 
 func slidesPatchHandler(c echo.Context) error {
@@ -158,6 +138,7 @@ func getSlideShowConfig(c echo.Context) SlideShowConfig {
 	showOnlyActive := c.QueryParam("showOnlyActive")
 	showOnlyInTimeFrame := c.QueryParam("showOnlyInTimeFrame")
 	showNewImagesWithPriority := c.QueryParam("showNewImagesWithPriority")
+	portraitMode := c.QueryParam("portraitMode")
 	modeRandom := c.QueryParam("modeRandom")
 	modeChronological := c.QueryParam("modeChronological")
 	modeReverseChronological := c.QueryParam("modeReverseChronological")
@@ -170,6 +151,7 @@ func getSlideShowConfig(c echo.Context) SlideShowConfig {
 		ShowOnlyInTimeFrame:       showOnlyInTimeFrame == "true",
 		ShowNewImagesWithPriority: showNewImagesWithPriority == "true",
 		ModeRandom:                modeRandom == "true",
+		PortraitMode:              portraitMode == "true",
 		ModeChronological:         modeChronological == "true",
 		ModeReverseChronological:  modeReverseChronological == "true",
 	}
@@ -201,6 +183,17 @@ func nextSlideHandler(c echo.Context) error {
 
 	// get current session
 	session := getSession(config.SessionID)
+
+	// check if PortraitMode mode changed
+	if session.LastConfig != nil && session.LastConfig.PortraitMode != config.PortraitMode {
+		log.Println("Portrait Mode changed, informing users")
+		currentMode := "Portrait"
+		if !config.PortraitMode {
+			currentMode = "Landscape"
+		}
+		// async message
+		go sendMessage("The Bilderrahmen was set to mode: " + currentMode)
+	}
 
 	if (config.ShowNewImagesWithPriority && session.LastConfig == nil) ||
 		(config.ShowNewImagesWithPriority && session.LastConfig != nil && !session.LastConfig.ShowNewImagesWithPriority) {
