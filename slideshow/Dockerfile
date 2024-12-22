@@ -9,6 +9,9 @@ ENV GOOS=linux \
     GOARCH=amd64 \
     GOARM=""
 
+RUN echo "Show all envrironment variables" && \
+    env
+
 # copy the code
 COPY . /go/src/app/
 
@@ -39,7 +42,7 @@ RUN case "$TARGETPLATFORM" in \
     echo "GOOS=$GOOS" && \
     echo "GOARCH=$GOARCH" && \
     VERSION=$(jq -r '.version' config.json) && \
-    GITHASH=$(git rev-parse --short HEAD) && \
+    GITHASH=$COMMIT_HASH && \
     if [ -n "$GOARM" ]; then echo "GOARM=$GOARM"; fi && \
     go build -a -tags netgo -ldflags "-w -s -X main.addon_version=$VERSION -X main.addon_githash=$GITHASH" -o app .
 
