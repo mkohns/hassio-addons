@@ -21,8 +21,7 @@ RUN go mod download && \
     go mod verify && \
     go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 RUN ls -al /go/bin && \
-    ls -al /go/bin/linux_amd64 || echo "/go/bin/linux_amd64 does not exist or could not be listed" && \
-    env && \
+    if [ -d "/go/bin/linux_amd64" ]; then export PATH="$PATH:/go/bin/linux_amd64"; else echo "/go/bin/linux_amd64 does not exist"; fi && \
     oapi-codegen -version && \
     go generate
 RUN case "$TARGETPLATFORM" in \
