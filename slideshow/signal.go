@@ -94,6 +94,7 @@ func connectToWebSocket(socketURL, username, password string) {
 					}
 					if downloadAttachment(attachment.ID, attachment.Filename) {
 						// Append the slide to the list
+						slideMutex.Lock()
 						slides = append(slides, Slide{
 							Filename:    attachment.Filename,
 							ImageURL:    "images/" + attachment.Filename,
@@ -104,8 +105,11 @@ func connectToWebSocket(socketURL, username, password string) {
 							Enabled:     true,
 							Favorite:    false,
 						})
+						slideMutex.Unlock()
 						sendReaction(msg)
+						slideMutex.RLock()
 						saveSlides(slides)
+						slideMutex.RUnlock()
 					}
 					// remove the attachment from the server
 					err := removeAttachment(attachment.ID)
@@ -133,7 +137,7 @@ func sendReaction(msg Message) {
 	timestamp := msg.Envelope.DataMessage.Timestamp
 	body := signal.PostV1ReactionsNumberJSONRequestBody{
 		Reaction:     &reaction,
-		Recipient:    &receipient,
+		Recipient:    &groupIdReal,
 		TargetAuthor: &receipient,
 		Timestamp:    intPtr(int(timestamp)),
 	}
@@ -143,6 +147,24 @@ func sendReaction(msg Message) {
 		return
 	}
 	log.Println("Reaction sent successfully")
+}
+
+func sendMessage(message string) {
+	recipients := []string{groupIdReal}
+	textMode := "normal"
+
+	body := signal.PostV2SendJSONRequestBody{
+		Message:    &message,
+		Number:     &accountNo,
+		Recipients: &recipients,
+		TextMode:   (*signal.ApiSendMessageV2TextMode)(&textMode),
+	}
+	_, err := signalClient.PostV2Send(context.Background(), body, doNothing)
+	if err != nil {
+		log.Println("Error sending message:", err)
+		return
+	}
+	log.Println("Message sent successfully")
 }
 
 func removeAttachment(attachmentID string) error {

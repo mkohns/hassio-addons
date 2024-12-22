@@ -72,8 +72,6 @@ class BackendClient {
       endDate: store.endDate,
     };
 
-    console.log(params);
-
     return this.instance.get(`/nextslide`, { params: params });
   }
 }

@@ -17,6 +17,7 @@ type HAConfig struct {
 	SignalOutputFolder    string `json:"SIGNAL_OUTPUTFOLDER"`
 	SignalThumbnailFolder string `json:"SIGNAL_THUMBNAILFOLDER"`
 	SignalGroupID         string `json:"SIGNAL_GROUPID"`
+	SignalGroupIDReal     string `json:"SIGNAL_GROUPID_REAL"`
 	SignalSignalWS        string `json:"SIGNAL_SIGNALWS"`
 	SignalSignalAPI       string `json:"SIGNAL_SIGNALAPI"`
 	SlideshowPort         string `json:"SLIDESHOW_PORT"`

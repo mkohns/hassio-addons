@@ -11,3 +11,22 @@
 # Home Assistant Add-on: Slideshow
 
 ## What is it for ?
+
+## TODO
+
+- enable video support
+- send "dumps up" on processed images [DONE]
+- send "I am bored" after 1 week of no new images
+- make sender naming possible
+- mark pictures of the day (new ones) [DONE]
+- support more slide modes [DONE]
+  - chronological [DONE]
+  - favorites only[DONE]
+  - random[DONE]
+  - time range[DONE]
+- mark pictures as favorites [DONE]
+- enable/disable pictures [DONE]
+- add info screen
+- send error message if orientation is wrong
+- refactor to use attachmentid instead of filename as key
+-

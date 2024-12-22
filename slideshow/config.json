@@ -1,6 +1,6 @@
 {
   "name": "Signal Slideshow",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "slug": "signalslide",
   "description": "Signal Slideshow",
   "arch": ["armv7", "amd64", "aarch64"],
@@ -25,6 +25,7 @@
     "SIGNAL_OUTPUTFOLDER": "/config/images/",
     "SIGNAL_THUMBNAILFOLDER": "/config/thumbnails/",
     "SIGNAL_GROUPID": "your_group_id",
+    "SIGNAL_GROUPID_REAL": "your_real_group_id",
     "SIGNAL_SIGNALWS": "ws://homeassistant.fritz.box:8080/v1/receive/",
     "SIGNAL_SIGNALAPI": "http://homeassistant.fritz.box:8080/",
     "SLIDESHOW_PORT": "4000",
@@ -38,6 +39,7 @@
     "SIGNAL_OUTPUTFOLDER": "str",
     "SIGNAL_THUMBNAILFOLDER": "str",
     "SIGNAL_GROUPID": "str",
+    "SIGNAL_GROUPID_REAL": "str",
     "SIGNAL_SIGNALWS": "str",
     "SIGNAL_SIGNALAPI": "str",
     "SLIDESHOW_PORT": "str",

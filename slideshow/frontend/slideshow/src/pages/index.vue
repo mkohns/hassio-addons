@@ -1,6 +1,11 @@
 <template>
   <div class="image-container" @click="toggleActions">
     <v-chip v-if="showNewChip" size="x-large" class="newchip">🔥 NEW</v-chip>
+    <div class="errorContainer" v-if="error != null" @click="toggleActions">
+      <div class="error-heading">Hm, we could not find any pictures!</div>
+      <img v-if="error != null" src="@/assets/404.png" class="mid-size-image" />
+      <div class="error-footer">The server reported: {{ error }}</div>
+    </div>
     <img
       ref="img1"
       style="opacity: 0"
@@ -94,6 +99,7 @@ let intervalId;
 const imageUrl1 = ref("");
 const imageUrl2 = ref("");
 const slide = ref(null);
+const error = ref(null);
 const currentImage = ref(1);
 
 const showActions = ref(false);
@@ -224,7 +230,9 @@ function manage(evt) {
 
 function settings(evt) {
   console.log("Slideshow settings");
-  router.push("/config");
+  router.push("/config").catch((err) => {
+    console.error("Error navigating to settings:", err);
+  });
 }
 
 function info(evt) {
@@ -262,6 +270,7 @@ function fetchNextSlide() {
   backend
     .nextSlide()
     .then((response) => {
+      error.value = null;
       slide.value = response.data;
       const newImageUrl = `${url}/${slide.value.ImageURL}`;
       if (currentImage.value === 1) {
@@ -276,11 +285,14 @@ function fetchNextSlide() {
         currentImage.value = 1;
       }
     })
-    .catch((error) => {
-      console.error("Error fetching next slide:", error);
+    .catch((err) => {
+      console.error("Error fetching next slide:", err);
       img1.value.style.opacity = 0.0;
       img2.value.style.opacity = 0.0;
       slide.value = null;
+      console.log(err);
+      error.value =
+        err.response?.data || err.message || "Unknown error occurred"; // Update error message
     });
 }
 
@@ -318,6 +330,16 @@ onUnmounted(() => {
   transition: opacity 4s ease-in-out;
 }
 
+.mid-size-image {
+  width: 50vw;
+  height: 50vh;
+  object-fit: contain;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .overlay {
   position: absolute;
   bottom: 0;
@@ -334,5 +356,25 @@ onUnmounted(() => {
   top: 15px;
   right: 15px;
   z-index: 100;
+}
+
+.error-heading {
+  position: absolute;
+  font-size: 2em;
+  text-align: center;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.error-footer {
+  position: absolute;
+  font-size: 1.1em;
+  text-align: center;
+  bottom: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
 }
 </style>

@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"sync"
 )
 
 // slides holder
 var slides []Slide
+var slideMutex sync.RWMutex
 
 // some global variables
 var username string
@@ -18,6 +20,7 @@ var thumbnailfolder string
 var configfolder string
 var port string
 var groupId string
+var groupIdReal string
 var frontenddist string
 var signalws string
 var signalapi string
@@ -47,6 +50,7 @@ func main() {
 		outputfolder = config.SignalOutputFolder
 		thumbnailfolder = config.SignalThumbnailFolder
 		groupId = config.SignalGroupID
+		groupIdReal = config.SignalGroupIDReal
 		signalws = config.SignalSignalWS
 		signalapi = config.SignalSignalAPI
 
@@ -61,6 +65,7 @@ func main() {
 		loadEnvVariable("SIGNAL_OUTPUTFOLDER", &outputfolder)
 		loadEnvVariable("SIGNAL_THUMBNAILFOLDER", &thumbnailfolder)
 		loadEnvVariable("SIGNAL_GROUPID", &groupId)
+		loadEnvVariable("SIGNAL_GROUPID_REAL", &groupIdReal)
 		loadEnvVariable("SIGNAL_SIGNALWS", &signalws)
 		loadEnvVariable("SIGNAL_SIGNALAPI", &signalapi)
 
@@ -104,8 +109,10 @@ func readSlides() []Slide {
 	file, err := os.Open(configfolder + "slides.json")
 	if err != nil {
 		log.Println("Error opening file:", err)
+		slideMutex.Lock()
 		slides = make([]Slide, 0)
 		saveSlides(slides)
+		slideMutex.Unlock()
 		log.Println("Created empty slides.json")
 		return slides
 	}
@@ -123,6 +130,7 @@ func readSlides() []Slide {
 	return slides
 }
 
+// Caution, when calling this, the mutex must be locked
 func saveSlides(slides []Slide) {
 	// Open the file for writing
 	file, err := os.Create(configfolder + "slides.json")
