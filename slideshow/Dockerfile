@@ -15,15 +15,12 @@ RUN echo "Show all envrironment variables" && \
 # copy the code
 COPY . /go/src/app/
 
-WORKDIR /go/src/app/frontend/slideshow
-RUN yarn install && yarn build
-
 # care for the server
 WORKDIR /go/src/app
 RUN go mod download && \
     go mod verify && \
     go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
-RUN ls -al /go/bin && \
+RUN ls -alr /go/bin && \
     env && \
     oapi-codegen -version && \
     go generate
@@ -46,8 +43,14 @@ RUN case "$TARGETPLATFORM" in \
     echo "GOARCH=$GOARCH" && \
     VERSION=$(jq -r '.version' config.json) && \
     GITHASH=$COMMIT_HASH && \
+    echo "VERSION=$VERSION" && \
+    echo "GITHASH=$GITHASH" && \
     if [ -n "$GOARM" ]; then echo "GOARM=$GOARM"; fi && \
     go build -a -tags netgo -ldflags "-w -s -X main.addon_version=$VERSION -X main.addon_githash=$GITHASH" -o app .
+
+# care for the frontend
+WORKDIR /go/src/app/frontend/slideshow
+RUN yarn install && yarn build
 
 FROM scratch
 
