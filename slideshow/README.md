@@ -14,19 +14,19 @@
 
 ## TODO
 
-- enable video support
-- send "dumps up" on processed images [DONE]
-- send "I am bored" after 1 week of no new images
-- make sender naming possible
-- mark pictures of the day (new ones) [DONE]
-- support more slide modes [DONE]
-  - chronological [DONE]
-  - favorites only[DONE]
-  - random[DONE]
-  - time range[DONE]
-- mark pictures as favorites [DONE]
-- enable/disable pictures [DONE]
-- add info screen
-- send error message if orientation is wrong
-- refactor to use attachmentid instead of filename as key
--
+- [ ] enable video support
+- [x] send "rocket" on processed images
+- [ ] send "I am bored" after 1 week of no new images
+- [ ] make sender naming possible
+- [x] mark pictures of the day (new ones)
+- [x] support more slide modes
+- [x] chronological
+- [x] favorites only
+- [x] random
+- [x] time range
+- [x] mark pictures as favorites
+- [x] enable/disable pictures
+- [x] add info screen
+- [x] send error message if orientation is wrong
+- [x] refactor to use attachmentid instead of filename as key
+- [x] Enable Sessions in frontend
