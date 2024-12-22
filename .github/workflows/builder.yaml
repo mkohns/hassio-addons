@@ -111,6 +111,8 @@ jobs:
       - name: Build ${{ matrix.addon }} add-on
         if: steps.check.outputs.build_arch == 'true'
         uses: home-assistant/builder@2024.08.2
+        env:
+          COMMIT_HASH: ${{ env.COMMIT_HASH }}
         with:
           args: |
             ${{ env.BUILD_ARGS }} \
