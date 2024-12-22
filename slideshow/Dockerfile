@@ -21,7 +21,7 @@ RUN go mod download && \
     go mod verify && \
     go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 RUN ls -al /go/bin && \
-    ls -al /go/bin/linux_amd64 && \
+    ls -al /go/bin/linux_amd64 || echo "/go/bin/linux_amd64 does not exist or could not be listed" && \
     env && \
     oapi-codegen -version && \
     go generate
