@@ -43,7 +43,7 @@ RUN case "$TARGETPLATFORM" in \
     echo "GOOS=$GOOS" && \
     echo "GOARCH=$GOARCH" && \
     VERSION=$(jq -r '.version' config.json) && \
-    source ./commit_hash.txt && \
+    . ./commit_hash.txt && \
     GITHASH=$COMMIT_HASH && \
     echo "VERSION=$VERSION" && \
     echo "GITHASH=$GITHASH" && \
