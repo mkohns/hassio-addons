@@ -52,6 +52,7 @@ RUN case "$TARGETPLATFORM" in \
 WORKDIR /go/src/app/frontend/slideshow
 RUN yarn install && yarn build
 
+
 FROM scratch
 
 COPY --from=builder /etc/passwd /etc/passwd

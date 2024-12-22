@@ -103,7 +103,7 @@ jobs:
           ls -al slideshow
           export COMMIT_HASH=$(git rev-parse HEAD) 
           echo "COMMIT_HASH=${COMMIT_HASH}" >> $GITHUB_ENV
-          sed -i 's/COMMIT_HASH_TOKEN/${COMMIT_HASH}/g' slideshow/build.yaml
+          sed -i "s/COMMIT_HASH_TOKEN/${COMMIT_HASH}/g" slideshow/build.yaml
           more slideshow/build.yaml
 
       - name: Login to GitHub Container Registry
