@@ -48,7 +48,7 @@ RUN case "$TARGETPLATFORM" in \
     if [ -n "$GOARM" ]; then echo "GOARM=$GOARM"; fi && \
     go build -a -tags netgo -ldflags "-w -s -X main.addon_version=$VERSION -X main.addon_githash=$GITHASH" -o app .
 
-# care for the frontend
+# second care for the frontend
 WORKDIR /go/src/app/frontend/slideshow
 RUN yarn install && yarn build
 
