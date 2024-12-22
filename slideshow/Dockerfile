@@ -15,7 +15,7 @@ RUN echo "Show all envrironment variables" && \
 # copy the code
 COPY . /go/src/app/
 
-# care for the server
+# first care for the server 
 WORKDIR /go/src/app
 RUN go mod download && \
     go mod verify && \

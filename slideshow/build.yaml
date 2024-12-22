@@ -2,3 +2,5 @@ build_from:
   aarch64: "ghcr.io/mkohns/aarch64-govuebuilder:1.23.4"
   amd64: "ghcr.io/mkohns/amd64-govuebuilder:1.23.4"
   armv7: "ghcr.io/mkohns/armv7-govuebuilder:1.23.4"
+args:
+  COMMIT_HASH: COMMIT_HASH_TOKEN
