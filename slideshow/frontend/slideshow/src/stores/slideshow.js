@@ -16,6 +16,7 @@ export const useSlideshowStore = defineStore("slideshow", {
     modeReverseChronological: false,
     startDate: null,
     endDate: null,
+    portraitMode: false,
   }),
   persist: true, // Enable persistence
   actions: {
@@ -54,6 +55,9 @@ export const useSlideshowStore = defineStore("slideshow", {
     },
     setPrioNewImages(value) {
       this.prioNewImages = value;
+    },
+    setPortraitMode(value) {
+      this.portraitMode = value;
     },
   },
 });

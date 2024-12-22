@@ -21,6 +21,31 @@ func thumbnailHandler(c echo.Context) error {
 	return c.File(thumbnailfolder + filename)
 }
 
+var currentPortraitMode = false
+
+type PortraitPatchBody struct {
+	PortraitMode bool `json:"PortraitMode"`
+}
+
+func portraitModeHandler(c echo.Context) error {
+	// Get the body
+	body := new(PortraitPatchBody)
+	err := c.Bind(body)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "couldNotRetrieveBody")
+	}
+
+	currentPortraitMode = body.PortraitMode
+
+	currentMode := "Portrait"
+	if !currentPortraitMode {
+		currentMode = "Landscape"
+	}
+	sendMessage("The Bilderrahmen was rearranged to mode: " + currentMode)
+
+	return c.NoContent(http.StatusOK)
+}
+
 func slidesPatchHandler(c echo.Context) error {
 	filename := c.Param("filename")
 

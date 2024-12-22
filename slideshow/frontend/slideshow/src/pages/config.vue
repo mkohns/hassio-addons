@@ -30,6 +30,13 @@
         <v-switch
           hide-details
           color="primary"
+          :label="portraitMode ? 'Portrait Mode' : 'Landscape Mode'"
+          v-model="portraitMode"
+        >
+        </v-switch>
+        <v-switch
+          hide-details
+          color="primary"
           label="Show Subtitle Overlay"
           v-model="overlay"
         >
@@ -147,6 +154,7 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { useSlideshowStore } from "@/stores/slideshow";
 import router from "@/router";
 import DateSelect from "@/components/dateSelect.vue";
+import backend from "@/api/backend";
 
 const store = useSlideshowStore();
 
@@ -162,6 +170,7 @@ const modeChronological = ref(store.modeChronological);
 const modeReverseChronological = ref(store.modeReverseChronological);
 const startDate = ref(store.startDate);
 const endDate = ref(store.endDate);
+const portraitMode = ref(store.portraitMode);
 
 function startDateUpdate(value) {
   console.log("Start Date Update:", value);
@@ -181,6 +190,14 @@ const saveConfig = () => {
   store.setModeRandom(modeRandom.value);
   store.setModeChronological(modeChronological.value);
   store.setModeReverseChronological(modeReverseChronological.value);
+
+  if (store.portraitMode != portraitMode.value) {
+    // change portrait mode on server
+    backend.updateOrientation(portraitMode.value);
+    store.setPortraitMode(portraitMode.value);
+  }
+
+  store.setPortraitMode(portraitMode.value);
 
   if (showOnlyInTimeFrame.value && startDate.value == null) {
     showOnlyInTimeFrame.value = false;

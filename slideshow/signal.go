@@ -105,9 +105,26 @@ func connectToWebSocket(socketURL, username, password string) {
 							Enabled:     true,
 							Favorite:    false,
 						})
+
 						newIndex := len(slides) - 1
 						slideMutex.Unlock()
-						sendReaction(msg)
+
+						// check image orientation
+						err, imageOrientation := isImagePortraitInOrientation(outputfolder + attachment.Filename)
+						if err != nil {
+							log.Println("Error checking image orientation:", err)
+						}
+						if err == nil && imageOrientation != currentPortraitMode {
+							currentMode := "Portrait"
+							if !currentPortraitMode {
+								currentMode = "Landscape"
+							}
+							sendMessage("The image is in wrong orientation 👎. Current mode: " + currentMode)
+							sendReaction(msg, "👎")
+						} else {
+							sendReaction(msg, "🚀")
+						}
+
 						slideMutex.RLock()
 						saveSlides(slides)
 						slideMutex.RUnlock()
@@ -128,6 +145,28 @@ func connectToWebSocket(socketURL, username, password string) {
 	}
 }
 
+func isImagePortraitInOrientation(filename string) (error, bool) {
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Println("Error opening file:", err)
+		return err, false
+	}
+	defer file.Close()
+
+	// Decode the image
+	img, _, err := image.DecodeConfig(file)
+	if err != nil {
+		log.Println("Error decoding image:", err)
+		return err, false
+	}
+
+	if img.Width > img.Height {
+		return nil, false
+	} else {
+		return nil, true
+	}
+}
+
 func handleNewPrioritySession(newIndex int) {
 	// Iterate over all slideSessions
 	for i, session := range slideSessions {
@@ -143,9 +182,9 @@ func doNothing(ctx context.Context, req *http.Request) error {
 	return nil
 }
 
-func sendReaction(msg Message) {
+func sendReaction(msg Message, emoji string) {
 	intPtr := func(i int) *int { return &i }
-	reaction := "🚀"
+	reaction := emoji
 	receipient := msg.Envelope.Source
 	timestamp := msg.Envelope.DataMessage.Timestamp
 	body := signal.PostV1ReactionsNumberJSONRequestBody{
