@@ -96,14 +96,16 @@ func connectToWebSocket(socketURL, username, password string) {
 						// Append the slide to the list
 						slideMutex.Lock()
 						slides = append(slides, Slide{
-							Filename:    attachment.Filename,
-							ImageURL:    "images/" + attachment.Filename,
-							TumbnailURL: "thumbnails/" + attachment.Filename,
-							Message:     msg.Envelope.DataMessage.Message,
-							CreatedBy:   msg.Envelope.SourceName,
-							CreatedAt:   time.Now(),
-							Enabled:     true,
-							Favorite:    false,
+							Timestamp:    msg.Envelope.DataMessage.Timestamp,
+							AttachmentID: attachment.ID,
+							Filename:     attachment.Filename,
+							ImageURL:     "images/" + attachment.Filename,
+							TumbnailURL:  "thumbnails/" + attachment.Filename,
+							Message:      msg.Envelope.DataMessage.Message,
+							CreatedBy:    msg.Envelope.SourceName,
+							CreatedAt:    time.Now(),
+							Enabled:      true,
+							Favorite:     false,
 						})
 
 						newIndex := len(slides) - 1
@@ -136,6 +138,22 @@ func connectToWebSocket(socketURL, username, password string) {
 						log.Println("Error removing attachment:", err)
 					}
 				}
+			} else if msg.Envelope.DataMessage != nil &&
+				msg.Envelope.DataMessage.RemoteDelete != nil {
+				log.Printf("Got RemoteDelete Message for timestamp: %d \n", msg.Envelope.DataMessage.RemoteDelete.Timestamp)
+				// remove the slide from the list
+				slideMutex.Lock()
+				for i, slide := range slides {
+					if slide.Timestamp == msg.Envelope.DataMessage.RemoteDelete.Timestamp {
+						log.Printf("Removing slide <%d> from list\n", i)
+						slides = append(slides[:i], slides[i+1:]...)
+						break
+					}
+				}
+				slideMutex.Unlock()
+				slideMutex.RLock()
+				saveSlides(slides)
+				slideMutex.RUnlock()
 			}
 
 		}

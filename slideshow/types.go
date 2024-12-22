@@ -53,6 +53,10 @@ type DataMessage struct {
 	ViewOnce         bool         `json:"viewOnce"`
 	Attachments      []Attachment `json:"attachments,omitempty"`
 	GroupInfo        *GroupInfo   `json:"groupInfo,omitempty"`
+	RemoteDelete     *Timestamp   `json:"remoteDelete,omitempty"`
+}
+type Timestamp struct {
+	Timestamp int64 `json:"timestamp"`
 }
 
 type TypingMessage struct {
@@ -80,14 +84,16 @@ type Message struct {
 }
 
 type Slide struct {
-	Filename    string
-	ImageURL    string
-	TumbnailURL string
-	Message     string
-	CreatedBy   string
-	CreatedAt   time.Time
-	Enabled     bool
-	Favorite    bool
+	Timestamp    int64
+	AttachmentID string
+	Filename     string
+	ImageURL     string
+	TumbnailURL  string
+	Message      string
+	CreatedBy    string
+	CreatedAt    time.Time
+	Enabled      bool
+	Favorite     bool
 }
 
 type SlidePatchBody struct {
