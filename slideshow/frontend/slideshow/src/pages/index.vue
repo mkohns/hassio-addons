@@ -157,7 +157,7 @@ function pause(evt) {
     item.text = "Resume Image";
     item.icon = "mdi-eye-off";
     backend
-      .pauseImage(slide.value.Filename)
+      .pauseImage(slide.value.AttachmentID)
       .then((response) => {
         console.log("Image paused");
       })
@@ -168,7 +168,7 @@ function pause(evt) {
     item.text = "Pause Image";
     item.icon = "mdi-eye";
     backend
-      .resumeImage(slide.value.Filename)
+      .resumeImage(slide.value.AttachmentID)
       .then((response) => {
         console.log("Image resumed");
       })
@@ -187,7 +187,7 @@ function favorite(evt) {
     item.icon = "mdi-heart";
     item.color = "red";
     backend
-      .like(slide.value.Filename)
+      .like(slide.value.AttachmentID)
       .then((response) => {
         console.log("Image liked");
       })
@@ -199,7 +199,7 @@ function favorite(evt) {
     item.icon = "mdi-star";
     item.color = "white";
     backend
-      .unlike(slide.value.Filename)
+      .unlike(slide.value.AttachmentID)
       .then((response) => {
         console.log("Image unliked");
       })
@@ -213,7 +213,7 @@ function deleteImage(evt) {
   if (!slide.value) return;
   console.log("Deleting image");
   backend
-    .delete(slide.value.Filename)
+    .delete(slide.value.AttachmentID)
     .then((response) => {
       console.log("Image deleted");
       toggleActions();

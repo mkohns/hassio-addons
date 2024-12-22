@@ -31,32 +31,32 @@ class BackendClient {
     return err;
   }
 
-  pauseImage(imageId) {
+  pauseImage(attachmendId) {
     let body = {
       Enabled: false,
     };
-    return this.instance.patch(`/slides/${imageId}`, body);
+    return this.instance.patch(`/slides/${attachmendId}`, body);
   }
-  resumeImage(imageId) {
+  resumeImage(attachmendId) {
     let body = {
       Enabled: true,
     };
-    return this.instance.patch(`/slides/${imageId}`, body);
+    return this.instance.patch(`/slides/${attachmendId}`, body);
   }
-  like(imageId) {
+  like(attachmendId) {
     let body = {
       Favorite: true,
     };
-    return this.instance.patch(`/slides/${imageId}`, body);
+    return this.instance.patch(`/slides/${attachmendId}`, body);
   }
-  unlike(imageId) {
+  unlike(attachmendId) {
     let body = {
       Favorite: false,
     };
-    return this.instance.patch(`/slides/${imageId}`, body);
+    return this.instance.patch(`/slides/${attachmendId}`, body);
   }
-  delete(imageId) {
-    return this.instance.delete(`/slides/${imageId}`);
+  delete(attachmendId) {
+    return this.instance.delete(`/slides/${attachmendId}`);
   }
   getInfo() {
     return this.instance.get(`/info`);
@@ -74,7 +74,8 @@ class BackendClient {
       showOnlyFavorites: store.showOnlyFavorites,
       showOnlyActive: store.showOnlyActive,
       showOnlyInTimeFrame: store.showOnlyInTimeFrame,
-      ShowNewImagesWithPriority: store.prioNewImages,
+      showNewImagesWithPriority: store.prioNewImages,
+      portraitMode: store.portraitMode,
       modeRandom: store.modeRandom,
       modeChronological: store.modeChronological,
       modeReverseChronological: store.modeReverseChronological,

@@ -28,12 +28,12 @@ func startEchoServer() {
 	e.GET("/assets/:filename", assetHandler)
 
 	// API routes
-	e.GET("/images/:filename", imageHandler)
-	e.GET("/thumbnails/:filename", thumbnailHandler)
+	e.GET("/images/:attachmentID", imageHandler)
+	e.GET("/thumbnails/:attachmentID", thumbnailHandler)
 	e.GET("/nextslide", nextSlideHandler)
 	e.GET("/slides", slidesHandler)
-	e.DELETE("/slides/:filename", slidesDeleteHandler)
-	e.PATCH("/slides/:filename", slidesPatchHandler)
+	e.DELETE("/slides/:attachmentID", slidesDeleteHandler)
+	e.PATCH("/slides/:attachmentID", slidesPatchHandler)
 	e.PATCH("portraitMode", portraitModeHandler)
 	e.GET("/info", infoHandler)
 

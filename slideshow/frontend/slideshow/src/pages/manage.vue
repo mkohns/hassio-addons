@@ -20,7 +20,7 @@
           <v-data-table
             :headers="headers"
             :items="filteredslides"
-            item-value="Filename"
+            item-value="AttachmentID"
             hide-default-footer
             class="elevation-1"
           >
@@ -105,7 +105,7 @@ if (url === undefined) {
 function enableImage(item) {
   console.log("enable");
   backend
-    .resumeImage(item.Filename)
+    .resumeImage(item.AttachmentID)
     .then(() => {
       loadData();
     })
@@ -117,7 +117,7 @@ function enableImage(item) {
 function disableImage(item) {
   console.log("disable");
   backend
-    .pauseImage(item.Filename)
+    .pauseImage(item.AttachmentID)
     .then(() => {
       loadData();
     })
@@ -129,7 +129,7 @@ function disableImage(item) {
 function likeImage(item) {
   console.log("like");
   backend
-    .like(item.Filename)
+    .like(item.AttachmentID)
     .then(() => {
       loadData();
     })
@@ -141,7 +141,7 @@ function likeImage(item) {
 function unlikeImage(item) {
   console.log("like");
   backend
-    .unlike(item.Filename)
+    .unlike(item.AttachmentID)
     .then(() => {
       loadData();
     })
@@ -153,7 +153,7 @@ function unlikeImage(item) {
 function deleteImage(item) {
   console.log("delete");
   backend
-    .delete(item.Filename)
+    .delete(item.AttachmentID)
     .then(() => {
       loadData();
     })

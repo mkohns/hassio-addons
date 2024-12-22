@@ -11,20 +11,26 @@ import (
 	"github.com/labstack/echo"
 )
 
+// some global variables
+var randomGenerator = rand.New(rand.NewSource(time.Now().UnixNano()))
+var currentPortraitMode = false
+
 func imageHandler(c echo.Context) error {
-	filename := c.Param("filename")
-	return c.File(outputfolder + filename)
+	attachmentID := c.Param("attachmentID")
+	slide := getSlideByAttachmentID(attachmentID)
+	if slide == nil {
+		return c.String(http.StatusNotFound, "Slide not found")
+	}
+	return c.File(outputfolder + attachmentID)
 }
 
 func thumbnailHandler(c echo.Context) error {
-	filename := c.Param("filename")
-	return c.File(thumbnailfolder + filename)
-}
-
-var currentPortraitMode = false
-
-type PortraitPatchBody struct {
-	PortraitMode bool `json:"PortraitMode"`
+	attachmentID := c.Param("attachmentID")
+	slide := getSlideByAttachmentID(attachmentID)
+	if slide == nil {
+		return c.String(http.StatusNotFound, "Slide not found")
+	}
+	return c.File(thumbnailfolder + attachmentID)
 }
 
 func portraitModeHandler(c echo.Context) error {
@@ -47,7 +53,11 @@ func portraitModeHandler(c echo.Context) error {
 }
 
 func slidesPatchHandler(c echo.Context) error {
-	filename := c.Param("filename")
+	attachmentID := c.Param("attachmentID")
+	slide := getSlideByAttachmentID(attachmentID)
+	if slide == nil {
+		return c.String(http.StatusNotFound, "Slide not found")
+	}
 
 	// Get the body
 	body := new(SlidePatchBody)
@@ -61,25 +71,15 @@ func slidesPatchHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "emptyBody")
 	}
 
-	slideMutex.Lock()
-	defer slideMutex.Unlock()
-
-	for i, slide := range slides {
-		if slide.Filename == filename {
-
-			if body.Favorite != nil {
-				slides[i].Favorite = *body.Favorite
-			}
-
-			if body.Enabled != nil {
-				slides[i].Enabled = *body.Enabled
-			}
-
-			saveSlides(slides)
-			return c.NoContent(http.StatusOK)
-		}
+	if body.Favorite != nil {
+		updateSlideFavorite(slide.AttachmentID, *body.Favorite)
 	}
-	return c.String(http.StatusNotFound, "Slide not found")
+
+	if body.Enabled != nil {
+		updateSlideEnabled(slide.AttachmentID, *body.Enabled)
+	}
+
+	return c.JSON(http.StatusOK, getSlideByAttachmentID(attachmentID))
 }
 
 func infoHandler(c echo.Context) error {
@@ -89,16 +89,8 @@ func infoHandler(c echo.Context) error {
 	// get the size of the thumbnail directory
 	thumbnailSize := getDirSize(thumbnailfolder)
 	// get favorite and enabled count
-	favoriteCount := 0
-	enabledCount := 0
-	for _, slide := range slides {
-		if slide.Favorite {
-			favoriteCount++
-		}
-		if slide.Enabled {
-			enabledCount++
-		}
-	}
+	favoriteCount := getFavoriteSlideCount()
+	enabledCount := getActiveSlideCount()
 
 	info := SlideInfo{
 		SlidesCount:   len(slides),
@@ -131,70 +123,22 @@ func getDirSize(path string) int {
 }
 
 func slidesDeleteHandler(c echo.Context) error {
-	filename := c.Param("filename")
-	slideMutex.RLock()
-
-	for i, slide := range slides {
-		if slide.Filename == filename {
-			// Remove the slide from the list
-			slides = append(slides[:i], slides[i+1:]...)
-			saveSlides(slides)
-			slideMutex.RUnlock()
-			// Delete the image and thumbnail files
-			os.Remove(outputfolder + slide.Filename)
-			os.Remove(thumbnailfolder + slide.Filename)
-
-			return c.NoContent(http.StatusOK)
-		}
+	attachmentID := c.Param("attachmentID")
+	slide := getSlideByAttachmentID(attachmentID)
+	if slide == nil {
+		return c.String(http.StatusNotFound, "Slide not found")
 	}
-	slideMutex.RUnlock()
-	return c.String(http.StatusNotFound, "Slide not found")
+
+	// remove the slide from the list
+	removeSlideByAttachementID(attachmentID)
+
+	return c.NoContent(http.StatusOK)
 }
 
 func slidesHandler(c echo.Context) error {
 	slideMutex.RLock()
 	defer slideMutex.RUnlock()
 	return c.JSON(http.StatusOK, slides)
-}
-
-type SlideShowConfig struct {
-	SessionID                 string
-	ShowOnlyFavorites         bool
-	ShowOnlyActive            bool
-	ShowOnlyInTimeFrame       bool
-	ShowNewImagesWithPriority bool
-	ModeRandom                bool
-	ModeChronological         bool
-	ModeReverseChronological  bool
-	StartDate                 *time.Time
-	EndDate                   *time.Time
-}
-
-const (
-	ModeRandom               string = "random"
-	ModeChronological        string = "chronological"
-	ModeReverseChronological string = "reverseChronological"
-)
-
-type SlideSessionInfo struct {
-	lastConfig        *SlideShowConfig
-	randomGenerator   *rand.Rand
-	lastSlideIndex    int
-	newSlidesPriority *[]int
-	prioNewSlides     bool
-}
-
-var slideSessions = make(map[string]*SlideSessionInfo)
-
-func init() {
-	log.Println("Initializing default slideSession")
-	slideSessions[""] = &SlideSessionInfo{
-		lastConfig:        nil,
-		randomGenerator:   rand.New(rand.NewSource(time.Now().UnixNano())),
-		lastSlideIndex:    -1,
-		prioNewSlides:     false,
-		newSlidesPriority: nil,
-	}
 }
 
 func (config SlideShowConfig) getMode() string {
@@ -213,7 +157,7 @@ func getSlideShowConfig(c echo.Context) SlideShowConfig {
 	showOnlyFavorites := c.QueryParam("showOnlyFavorites")
 	showOnlyActive := c.QueryParam("showOnlyActive")
 	showOnlyInTimeFrame := c.QueryParam("showOnlyInTimeFrame")
-	showNewImagesWithPriority := c.QueryParam("ShowNewImagesWithPriority")
+	showNewImagesWithPriority := c.QueryParam("showNewImagesWithPriority")
 	modeRandom := c.QueryParam("modeRandom")
 	modeChronological := c.QueryParam("modeChronological")
 	modeReverseChronological := c.QueryParam("modeReverseChronological")
@@ -248,7 +192,7 @@ func getSlideShowConfig(c echo.Context) SlideShowConfig {
 }
 
 func nextSlideHandler(c echo.Context) error {
-	if len(slides) == 0 {
+	if getSlideCount() == 0 {
 		return c.String(http.StatusNotFound, "No pictures available 😢")
 	}
 
@@ -256,49 +200,39 @@ func nextSlideHandler(c echo.Context) error {
 	config := getSlideShowConfig(c)
 
 	// get current session
-	session := slideSessions[config.SessionID]
-	if session == nil {
-		session = &SlideSessionInfo{
-			lastConfig:        nil,
-			randomGenerator:   rand.New(rand.NewSource(time.Now().UnixNano())),
-			lastSlideIndex:    -1,
-			newSlidesPriority: nil,
-			prioNewSlides:     false,
-		}
-		slideSessions[config.SessionID] = session
-	}
+	session := getSession(config.SessionID)
 
-	if (config.ShowNewImagesWithPriority && session.lastConfig == nil) ||
-		(config.ShowNewImagesWithPriority && session.lastConfig != nil && !session.lastConfig.ShowNewImagesWithPriority) {
+	if (config.ShowNewImagesWithPriority && session.LastConfig == nil) ||
+		(config.ShowNewImagesWithPriority && session.LastConfig != nil && !session.LastConfig.ShowNewImagesWithPriority) {
 		log.Printf("activating new slides priority for session <%s> \n", config.SessionID)
-		session.prioNewSlides = true
+		session.PrioNewSlides = true
 		newArray := make([]int, 0)
-		session.newSlidesPriority = &newArray
-	} else if (!config.ShowNewImagesWithPriority && session.lastConfig == nil) ||
-		(!config.ShowNewImagesWithPriority && session.lastConfig != nil && session.lastConfig.ShowNewImagesWithPriority) {
+		session.NewSlidesPriority = &newArray
+		updateSession(config.SessionID, session)
+	} else if (!config.ShowNewImagesWithPriority && session.LastConfig == nil) ||
+		(!config.ShowNewImagesWithPriority && session.LastConfig != nil && session.LastConfig.ShowNewImagesWithPriority) {
 		log.Printf("deactivating new slides priority for session <%s> \n", config.SessionID)
-		session.prioNewSlides = false
-		session.newSlidesPriority = nil
+		session.PrioNewSlides = false
+		session.NewSlidesPriority = nil
+		updateSession(config.SessionID, session)
 	}
-	slideSessions[config.SessionID] = session
 
-	if session.prioNewSlides && session.newSlidesPriority != nil && len(*session.newSlidesPriority) > 0 {
+	if session.PrioNewSlides && session.NewSlidesPriority != nil && len(*session.NewSlidesPriority) > 0 {
 		// get first entry
-		nextIndex := (*session.newSlidesPriority)[0]
+		nextIndex := (*session.NewSlidesPriority)[0]
 		// remove first entry
-		*session.newSlidesPriority = (*session.newSlidesPriority)[1:]
+		*session.NewSlidesPriority = (*session.NewSlidesPriority)[1:]
 		// persist
-		session.lastConfig = &config
-		slideSessions[config.SessionID] = session
+		session.LastConfig = &config
+		updateSession(config.SessionID, session)
+
 		// return slide
-		log.Printf("Returning slide with priority: %d, remaining prios <%d> \n", nextIndex, len(*session.newSlidesPriority))
+		log.Printf("Returning slide with priority: %d, remaining prios <%d> \n", nextIndex, len(*session.NewSlidesPriority))
 		return c.JSON(http.StatusOK, slides[nextIndex])
-	} else if session.prioNewSlides {
+	} else if session.PrioNewSlides {
 		log.Printf("No slides with priority available for session: <%s> \n", config.SessionID)
 	}
 
-	slideMutex.RLock()
-	defer slideMutex.RUnlock()
 	// filter slides
 	filteredSlides := getFilteredSlides(&config)
 	if len(filteredSlides) == 0 {
@@ -306,15 +240,15 @@ func nextSlideHandler(c echo.Context) error {
 	}
 
 	// check if Slide mode changed
-	if session.lastConfig == nil || session.lastConfig.getMode() != config.getMode() {
+	if session.LastConfig == nil || session.LastConfig.getMode() != config.getMode() {
+		log.Println("Slide Mode changed, resetting LastSlideIndex")
 		// start over
-		session.lastSlideIndex = -1
-		session.lastConfig = &config
-		slideSessions[config.SessionID] = session
+		session.LastSlideIndex = -1
 	}
 
-	session.lastConfig = &config
-	slideSessions[config.SessionID] = session
+	// update LastConfig
+	session.LastConfig = &config
+	updateSession(config.SessionID, session)
 
 	if config.getMode() == ModeRandom {
 		// Fixes endlessloop if only one slide is available
@@ -323,87 +257,31 @@ func nextSlideHandler(c echo.Context) error {
 		}
 		var newSlideIndex int
 		for {
-			newSlideIndex = session.randomGenerator.Intn(len(filteredSlides))
+			newSlideIndex = randomGenerator.Intn(len(filteredSlides))
 			// never return the same slide twice in a row
-			if newSlideIndex != session.lastSlideIndex {
+			if newSlideIndex != session.LastSlideIndex {
 				break
 			}
 		}
-		session.lastSlideIndex = newSlideIndex
-		slideSessions[config.SessionID] = session
-		return c.JSON(http.StatusOK, slides[filteredSlides[newSlideIndex]])
+		session.LastSlideIndex = newSlideIndex
 	} else if config.getMode() == ModeChronological {
-		if session.lastSlideIndex+1 >= len(filteredSlides) {
-			session.lastSlideIndex = -1
+		if session.LastSlideIndex+1 >= len(filteredSlides) {
+			session.LastSlideIndex = -1
 		}
-		session.lastSlideIndex++
-		slideSessions[config.SessionID] = session
-		return c.JSON(http.StatusOK, slides[filteredSlides[session.lastSlideIndex]])
+		session.LastSlideIndex++
 	} else if config.getMode() == ModeReverseChronological {
-		if session.lastSlideIndex-1 < 0 {
-			session.lastSlideIndex = len(filteredSlides)
+		if session.LastSlideIndex-1 < 0 {
+			session.LastSlideIndex = len(filteredSlides)
 		}
-		session.lastSlideIndex--
-		slideSessions[config.SessionID] = session
-		return c.JSON(http.StatusOK, slides[filteredSlides[session.lastSlideIndex]])
+		session.LastSlideIndex--
+	} else {
+		log.Panicf("No mode detected, this should never happen")
 	}
 
-	// this should never happen
-	log.Println("No mode detected, this should never happen")
-	return c.NoContent(http.StatusNotFound)
-}
-
-func getFilteredSlides(config *SlideShowConfig) []int {
-	var filteredSlides []int = make([]int, 0)
-	// There are three filters that can be applied
-	// all filters are combined with AND
-	// 1. Show only favorites
-	// 2. Show only active
-	// 3. Show only in time frame
-	// 3.1 The slides createdAt must be after the start date
-	// 3.2 If the end date is not set, the end date is now
-	// 3.3 The slides createdAt must be before the end date
-	// The return value should be a list of indexes of the slides that match the filters
-	// If no slides match the filters, an empty list should be returned
-	// If no filters are set, all slides should be returned
-
-	// If no filters are set, return all slides
-	if !config.ShowOnlyFavorites && !config.ShowOnlyActive && !config.ShowOnlyInTimeFrame {
-		for i := range slides {
-			filteredSlides = append(filteredSlides, i)
-		}
-		return filteredSlides
+	if session.LastSlideIndex == -1 {
+		log.Panicf("LastSlideIndex is -1, this should never happen")
 	}
 
-	for i, slide := range slides {
-		// 1. Show only favorites
-		if config.ShowOnlyFavorites && !slide.Favorite {
-			continue
-		}
-		// 2. Show only active
-		if config.ShowOnlyActive && !slide.Enabled {
-			continue
-		}
-		// 3. Show only in time frame
-		if config.ShowOnlyInTimeFrame {
-			// 3.1 The slides createdAt must be after the start date
-			if config.StartDate != nil && slide.CreatedAt.Before(*config.StartDate) {
-				continue
-			}
-			// 3.2 If the end date is not set, the end date is now
-			endDate := config.EndDate
-			if endDate == nil {
-				now := time.Now()
-				endDate = &now
-			}
-			// 3.3 The slides createdAt must be before the end date
-			if slide.CreatedAt.After(*endDate) {
-				continue
-			}
-		}
-		// Add the index of the slide that matches all filters
-		filteredSlides = append(filteredSlides, i)
-	}
-
-	return filteredSlides
+	updateSession(config.SessionID, session)
+	return c.JSON(http.StatusOK, getSlideByIndex(filteredSlides[session.LastSlideIndex]))
 }

@@ -86,7 +86,6 @@ type Message struct {
 type Slide struct {
 	MsgTimestamp int64
 	AttachmentID string
-	Filename     string
 	ImageURL     string
 	TumbnailURL  string
 	Message      string
@@ -99,4 +98,35 @@ type Slide struct {
 type SlidePatchBody struct {
 	Enabled  *bool
 	Favorite *bool
+}
+
+type SlideShowConfig struct {
+	SessionID                 string
+	ShowOnlyFavorites         bool
+	ShowOnlyActive            bool
+	ShowOnlyInTimeFrame       bool
+	ShowNewImagesWithPriority bool
+	PortraitMode              bool
+	ModeRandom                bool
+	ModeChronological         bool
+	ModeReverseChronological  bool
+	StartDate                 *time.Time
+	EndDate                   *time.Time
+}
+
+const (
+	ModeRandom               string = "random"
+	ModeChronological        string = "chronological"
+	ModeReverseChronological string = "reverseChronological"
+)
+
+type PortraitPatchBody struct {
+	PortraitMode bool `json:"PortraitMode"`
+}
+
+type SlideSessionInfo struct {
+	LastConfig        *SlideShowConfig
+	LastSlideIndex    int
+	NewSlidesPriority *[]int
+	PrioNewSlides     bool
 }

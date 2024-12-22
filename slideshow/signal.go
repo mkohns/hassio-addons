@@ -25,7 +25,7 @@ import (
 var httpClient *http.Client = nil
 var signalClient *signal.ClientWithResponses = nil
 
-func InitClient(baseurl string) {
+func initClient(baseurl string) {
 	httpClient = &http.Client{
 		Timeout: 10 * time.Second, // Set the connection timeout
 	}
@@ -88,19 +88,13 @@ func connectToWebSocket(socketURL, username, password string) {
 				log.Println("Got Message with Attachments!")
 
 				for _, attachment := range msg.Envelope.DataMessage.Attachments {
-					if attachment.Filename == "" {
-						log.Println("Attachment has no filename, using ID as filename")
-						attachment.Filename = attachment.ID
-					}
-					if downloadAttachment(attachment.ID, attachment.Filename) {
+					if downloadAttachment(attachment.ID) {
 						// Append the slide to the list
-						slideMutex.Lock()
-						slides = append(slides, Slide{
+						newIndex := addSlide(Slide{
 							MsgTimestamp: msg.Envelope.DataMessage.Timestamp,
 							AttachmentID: attachment.ID,
-							Filename:     attachment.Filename,
-							ImageURL:     "images/" + attachment.Filename,
-							TumbnailURL:  "thumbnails/" + attachment.Filename,
+							ImageURL:     "images/" + attachment.ID,
+							TumbnailURL:  "thumbnails/" + attachment.ID,
 							Message:      msg.Envelope.DataMessage.Message,
 							CreatedBy:    msg.Envelope.SourceName,
 							CreatedAt:    time.Now(),
@@ -108,11 +102,8 @@ func connectToWebSocket(socketURL, username, password string) {
 							Favorite:     false,
 						})
 
-						newIndex := len(slides) - 1
-						slideMutex.Unlock()
-
 						// check image orientation
-						err, imageOrientation := isImagePortraitInOrientation(outputfolder + attachment.Filename)
+						err, imageOrientation := isImagePortraitInOrientation(outputfolder + attachment.ID)
 						if err != nil {
 							log.Println("Error checking image orientation:", err)
 						}
@@ -127,9 +118,6 @@ func connectToWebSocket(socketURL, username, password string) {
 							sendReaction(msg, "🚀")
 						}
 
-						slideMutex.RLock()
-						saveSlides(slides)
-						slideMutex.RUnlock()
 						handleNewPrioritySession(newIndex)
 					}
 					// remove the attachment from the server
@@ -141,24 +129,7 @@ func connectToWebSocket(socketURL, username, password string) {
 			} else if msg.Envelope.DataMessage != nil &&
 				msg.Envelope.DataMessage.RemoteDelete != nil {
 				log.Printf("Got RemoteDelete Message for timestamp: %d \n", msg.Envelope.DataMessage.RemoteDelete.Timestamp)
-				// remove the slide from the list
-				slideMutex.RLock()
-				newSlides := make([]Slide, 0)
-				for i, slide := range slides {
-					if slide.MsgTimestamp == msg.Envelope.DataMessage.RemoteDelete.Timestamp {
-						log.Printf("Removing slide <%d> from list\n", i)
-						// Delete the image and thumbnail files
-						os.Remove(outputfolder + slide.Filename)
-						os.Remove(thumbnailfolder + slide.Filename)
-					} else {
-						newSlides = append(newSlides, slide)
-					}
-				}
-				slideMutex.RUnlock()
-				slideMutex.RLock()
-				slides = newSlides
-				saveSlides(slides)
-				slideMutex.RUnlock()
+				removeSlideByTimestamp(msg.Envelope.DataMessage.RemoteDelete.Timestamp)
 			}
 
 		}
@@ -187,17 +158,6 @@ func isImagePortraitInOrientation(filename string) (error, bool) {
 		return nil, false
 	} else {
 		return nil, true
-	}
-}
-
-func handleNewPrioritySession(newIndex int) {
-	// Iterate over all slideSessions
-	for i, session := range slideSessions {
-		// If the session is not active, set the new slide as the active slide
-		if session.prioNewSlides && session.newSlidesPriority != nil {
-			log.Printf("Adding new prio slide <%d> to session <%s>", newIndex, i)
-			*slideSessions[i].newSlidesPriority = append(*slideSessions[i].newSlidesPriority, newIndex)
-		}
 	}
 }
 
@@ -256,9 +216,9 @@ func removeAttachment(attachmentID string) error {
 	return nil
 }
 
-func downloadAttachment(attachmentID, filename string) bool {
-	// check the filename
-	if !strings.HasSuffix(filename, ".jpg") && !strings.HasSuffix(filename, ".jpeg") && !strings.HasSuffix(filename, ".png") {
+func downloadAttachment(attachmentID string) bool {
+	// check the suffix
+	if !strings.HasSuffix(attachmentID, ".jpg") && !strings.HasSuffix(attachmentID, ".jpeg") && !strings.HasSuffix(attachmentID, ".png") {
 		log.Println("Attachment is not a jpg, jpeg or png file, skipping")
 		return false
 	}
@@ -277,12 +237,12 @@ func downloadAttachment(attachmentID, filename string) bool {
 	// Check if the content type is an image
 	contentType := res.Header.Get("Content-Type")
 	if !strings.HasPrefix(contentType, "image/") {
-		log.Printf("Attachment %s is not an image, skipping .. (real type: %s)", filename, contentType)
+		log.Printf("Attachment %s is not an image, skipping .. (real type: %s)", attachmentID, contentType)
 		return false
 	}
 
 	// Save the downloaded image to a file
-	file, err := os.Create(outputfolder + filename)
+	file, err := os.Create(outputfolder + attachmentID)
 	if err != nil {
 		log.Println("Error creating file:", err)
 		return false
@@ -297,21 +257,21 @@ func downloadAttachment(attachmentID, filename string) bool {
 	file.Close()
 
 	// create thumbnail
-	err = createThumbnail(filename)
+	err = createThumbnail(attachmentID)
 	if err != nil {
 		log.Println("Error creating thumbnail:", err)
-		os.Remove(outputfolder + filename)
+		os.Remove(outputfolder + attachmentID)
 		return false
 	}
 
-	log.Printf("Attachment %s downloaded and processed successfully", filename)
+	log.Printf("Attachment %s downloaded and processed successfully", attachmentID)
 	return true
 
 }
 
-func createThumbnail(filename string) error {
+func createThumbnail(attachmentID string) error {
 	// Open the file
-	file, err := os.Open(outputfolder + filename)
+	file, err := os.Open(outputfolder + attachmentID)
 	if err != nil {
 		return err
 	}
@@ -327,7 +287,7 @@ func createThumbnail(filename string) error {
 	thumbnail := resize.Thumbnail(100, 100, img, resize.Lanczos3)
 
 	// Save the thumbnail to a new file
-	out, err := os.Create(thumbnailfolder + filename)
+	out, err := os.Create(thumbnailfolder + attachmentID)
 	if err != nil {
 		return err
 	}
