@@ -58,6 +58,9 @@ class BackendClient {
   delete(imageId) {
     return this.instance.delete(`/slides/${imageId}`);
   }
+  getInfo() {
+    return this.instance.get(`/info`);
+  }
   nextSlide() {
     const store = useSlideshowStore();
 

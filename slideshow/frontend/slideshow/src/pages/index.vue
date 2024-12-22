@@ -237,6 +237,7 @@ function settings(evt) {
 
 function info(evt) {
   console.log("Info");
+  router.push("/info");
 }
 
 const formattedCreatedAt = computed(() => {

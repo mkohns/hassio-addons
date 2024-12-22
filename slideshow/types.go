@@ -3,11 +3,14 @@ package main
 import "time"
 
 type SlideInfo struct {
-	SlidesCount int    `json:"slidesCount"`
-	RemoteIP    string `json:"remoteIP"`
-	SlidesSize  int    `json:"slidesSize"`
-	Version     string `json:"version"`
-	GitCommit   string `json:"gitCommit"`
+	SlidesCount   int    `json:"slidesCount"`
+	FavoriteCount int    `json:"favoriteCount"`
+	ActiveCount   int    `json:"activeCount"`
+	RemoteIP      string `json:"remoteIP"`
+	SlidesSize    int    `json:"slidesSize"`
+	ThumbnailSize int    `json:"thumbnailSize"`
+	Version       string `json:"version"`
+	GitCommit     string `json:"gitCommit"`
 }
 
 type HAConfig struct {

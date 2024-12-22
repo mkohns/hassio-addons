@@ -62,14 +62,28 @@ func infoHandler(c echo.Context) error {
 	// get the size of the image directory
 	slidesSize := getDirSize(outputfolder)
 	// get the size of the thumbnail directory
-	slidesSize += getDirSize(thumbnailfolder)
+	thumbnailSize := getDirSize(thumbnailfolder)
+	// get favorite and enabled count
+	favoriteCount := 0
+	enabledCount := 0
+	for _, slide := range slides {
+		if slide.Favorite {
+			favoriteCount++
+		}
+		if slide.Enabled {
+			enabledCount++
+		}
+	}
 
 	info := SlideInfo{
-		SlidesCount: len(slides),
-		RemoteIP:    remoteIP,
-		SlidesSize:  slidesSize,
-		Version:     addon_version,
-		GitCommit:   addon_githash,
+		SlidesCount:   len(slides),
+		RemoteIP:      remoteIP,
+		SlidesSize:    slidesSize,
+		ThumbnailSize: thumbnailSize,
+		Version:       addon_version,
+		GitCommit:     addon_githash,
+		FavoriteCount: favoriteCount,
+		ActiveCount:   enabledCount,
 	}
 	return c.JSON(http.StatusOK, info)
 }
