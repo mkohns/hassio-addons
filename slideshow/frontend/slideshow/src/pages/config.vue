@@ -58,6 +58,12 @@
           v-model="showOnlyActive"
         >
         </v-switch>
+        <v-switch
+          hide-details
+          color="primary"
+          label="Prioritize New Images"
+          v-model="prioNewImages"
+        ></v-switch>
         <v-row no-gutters>
           <v-col cols="6">
             <v-switch
@@ -150,6 +156,7 @@ const newchip = ref(store.showNewChip);
 const showOnlyFavorites = ref(store.showOnlyFavorites);
 const showOnlyActive = ref(store.showOnlyActive);
 const showOnlyInTimeFrame = ref(store.showOnlyInTimeFrame);
+const prioNewImages = ref(store.prioNewImages);
 const modeRandom = ref(store.modeRandom);
 const modeChronological = ref(store.modeChronological);
 const modeReverseChronological = ref(store.modeReverseChronological);
@@ -170,6 +177,7 @@ const saveConfig = () => {
   store.setShowNewChip(newchip.value);
   store.setShowOnlyFavorites(showOnlyFavorites.value);
   store.setShowOnlyActive(showOnlyActive.value);
+  store.setPrioNewImages(prioNewImages.value);
   store.setModeRandom(modeRandom.value);
   store.setModeChronological(modeChronological.value);
   store.setModeReverseChronological(modeReverseChronological.value);

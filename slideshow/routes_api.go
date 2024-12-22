@@ -119,15 +119,16 @@ func slidesHandler(c echo.Context) error {
 }
 
 type SlideShowConfig struct {
-	SessionID                string
-	ShowOnlyFavorites        bool
-	ShowOnlyActive           bool
-	ShowOnlyInTimeFrame      bool
-	ModeRandom               bool
-	ModeChronological        bool
-	ModeReverseChronological bool
-	StartDate                *time.Time
-	EndDate                  *time.Time
+	SessionID                 string
+	ShowOnlyFavorites         bool
+	ShowOnlyActive            bool
+	ShowOnlyInTimeFrame       bool
+	ShowNewImagesWithPriority bool
+	ModeRandom                bool
+	ModeChronological         bool
+	ModeReverseChronological  bool
+	StartDate                 *time.Time
+	EndDate                   *time.Time
 }
 
 const (
@@ -137,9 +138,11 @@ const (
 )
 
 type SlideSessionInfo struct {
-	lastConfig      *SlideShowConfig
-	randomGenerator *rand.Rand
-	lastSlideIndex  int
+	lastConfig        *SlideShowConfig
+	randomGenerator   *rand.Rand
+	lastSlideIndex    int
+	newSlidesPriority *[]int
+	prioNewSlides     bool
 }
 
 var slideSessions = make(map[string]*SlideSessionInfo)
@@ -147,9 +150,11 @@ var slideSessions = make(map[string]*SlideSessionInfo)
 func init() {
 	log.Println("Initializing default slideSession")
 	slideSessions[""] = &SlideSessionInfo{
-		lastConfig:      nil,
-		randomGenerator: rand.New(rand.NewSource(time.Now().UnixNano())),
-		lastSlideIndex:  -1,
+		lastConfig:        nil,
+		randomGenerator:   rand.New(rand.NewSource(time.Now().UnixNano())),
+		lastSlideIndex:    -1,
+		prioNewSlides:     false,
+		newSlidesPriority: nil,
 	}
 }
 
@@ -169,6 +174,7 @@ func getSlideShowConfig(c echo.Context) SlideShowConfig {
 	showOnlyFavorites := c.QueryParam("showOnlyFavorites")
 	showOnlyActive := c.QueryParam("showOnlyActive")
 	showOnlyInTimeFrame := c.QueryParam("showOnlyInTimeFrame")
+	showNewImagesWithPriority := c.QueryParam("ShowNewImagesWithPriority")
 	modeRandom := c.QueryParam("modeRandom")
 	modeChronological := c.QueryParam("modeChronological")
 	modeReverseChronological := c.QueryParam("modeReverseChronological")
@@ -176,12 +182,13 @@ func getSlideShowConfig(c echo.Context) SlideShowConfig {
 	endDate := c.QueryParam("endDate")
 
 	config := SlideShowConfig{
-		ShowOnlyFavorites:        showOnlyFavorites == "true",
-		ShowOnlyActive:           showOnlyActive == "true",
-		ShowOnlyInTimeFrame:      showOnlyInTimeFrame == "true",
-		ModeRandom:               modeRandom == "true",
-		ModeChronological:        modeChronological == "true",
-		ModeReverseChronological: modeReverseChronological == "true",
+		ShowOnlyFavorites:         showOnlyFavorites == "true",
+		ShowOnlyActive:            showOnlyActive == "true",
+		ShowOnlyInTimeFrame:       showOnlyInTimeFrame == "true",
+		ShowNewImagesWithPriority: showNewImagesWithPriority == "true",
+		ModeRandom:                modeRandom == "true",
+		ModeChronological:         modeChronological == "true",
+		ModeReverseChronological:  modeReverseChronological == "true",
 	}
 
 	if startDate != "" {
@@ -203,7 +210,7 @@ func getSlideShowConfig(c echo.Context) SlideShowConfig {
 
 func nextSlideHandler(c echo.Context) error {
 	if len(slides) == 0 {
-		return c.String(http.StatusNotFound, "No slides available")
+		return c.String(http.StatusNotFound, "No pictures available 😢")
 	}
 
 	// get slide config
@@ -213,11 +220,42 @@ func nextSlideHandler(c echo.Context) error {
 	session := slideSessions[config.SessionID]
 	if session == nil {
 		session = &SlideSessionInfo{
-			lastConfig:      nil,
-			randomGenerator: rand.New(rand.NewSource(time.Now().UnixNano())),
-			lastSlideIndex:  -1,
+			lastConfig:        nil,
+			randomGenerator:   rand.New(rand.NewSource(time.Now().UnixNano())),
+			lastSlideIndex:    -1,
+			newSlidesPriority: nil,
+			prioNewSlides:     false,
 		}
 		slideSessions[config.SessionID] = session
+	}
+
+	if (config.ShowNewImagesWithPriority && session.lastConfig == nil) ||
+		(config.ShowNewImagesWithPriority && session.lastConfig != nil && !session.lastConfig.ShowNewImagesWithPriority) {
+		log.Printf("activating new slides priority for session <%s> \n", config.SessionID)
+		session.prioNewSlides = true
+		newArray := make([]int, 0)
+		session.newSlidesPriority = &newArray
+	} else if (!config.ShowNewImagesWithPriority && session.lastConfig == nil) ||
+		(!config.ShowNewImagesWithPriority && session.lastConfig != nil && session.lastConfig.ShowNewImagesWithPriority) {
+		log.Printf("deactivating new slides priority for session <%s> \n", config.SessionID)
+		session.prioNewSlides = false
+		session.newSlidesPriority = nil
+	}
+	slideSessions[config.SessionID] = session
+
+	if session.prioNewSlides && session.newSlidesPriority != nil && len(*session.newSlidesPriority) > 0 {
+		// get first entry
+		nextIndex := (*session.newSlidesPriority)[0]
+		// remove first entry
+		*session.newSlidesPriority = (*session.newSlidesPriority)[1:]
+		// persist
+		session.lastConfig = &config
+		slideSessions[config.SessionID] = session
+		// return slide
+		log.Printf("Returning slide with priority: %d, remaining prios <%d> \n", nextIndex, len(*session.newSlidesPriority))
+		return c.JSON(http.StatusOK, slides[nextIndex])
+	} else if session.prioNewSlides {
+		log.Printf("No slides with priority available for session: <%s> \n", config.SessionID)
 	}
 
 	slideMutex.RLock()
@@ -225,7 +263,7 @@ func nextSlideHandler(c echo.Context) error {
 	// filter slides
 	filteredSlides := getFilteredSlides(&config)
 	if len(filteredSlides) == 0 {
-		return c.String(http.StatusNotFound, "No slides available after filtering")
+		return c.String(http.StatusNotFound, "No slides available after filtering 🤔")
 	}
 
 	// check if Slide mode changed
@@ -235,6 +273,9 @@ func nextSlideHandler(c echo.Context) error {
 		session.lastConfig = &config
 		slideSessions[config.SessionID] = session
 	}
+
+	session.lastConfig = &config
+	slideSessions[config.SessionID] = session
 
 	if config.getMode() == ModeRandom {
 		// Fixes endlessloop if only one slide is available

@@ -9,6 +9,7 @@ export const useSlideshowStore = defineStore("slideshow", {
     showNewChip: false,
     showOnlyFavorites: false,
     showOnlyActive: false,
+    prioNewImages: false,
     showOnlyInTimeFrame: false,
     modeRandom: true,
     modeChronological: false,
@@ -50,6 +51,9 @@ export const useSlideshowStore = defineStore("slideshow", {
     },
     setEndDate(value) {
       this.endDate = value;
+    },
+    setPrioNewImages(value) {
+      this.prioNewImages = value;
     },
   },
 });

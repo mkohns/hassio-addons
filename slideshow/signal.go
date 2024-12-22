@@ -105,11 +105,13 @@ func connectToWebSocket(socketURL, username, password string) {
 							Enabled:     true,
 							Favorite:    false,
 						})
+						newIndex := len(slides) - 1
 						slideMutex.Unlock()
 						sendReaction(msg)
 						slideMutex.RLock()
 						saveSlides(slides)
 						slideMutex.RUnlock()
+						handleNewPrioritySession(newIndex)
 					}
 					// remove the attachment from the server
 					err := removeAttachment(attachment.ID)
@@ -123,6 +125,17 @@ func connectToWebSocket(socketURL, username, password string) {
 
 		log.Println("Reconnecting to WebSocket...")
 		time.Sleep(1 * time.Second) // Wait before reconnecting
+	}
+}
+
+func handleNewPrioritySession(newIndex int) {
+	// Iterate over all slideSessions
+	for i, session := range slideSessions {
+		// If the session is not active, set the new slide as the active slide
+		if session.prioNewSlides && session.newSlidesPriority != nil {
+			log.Printf("Adding new prio slide <%d> to session <%s>", newIndex, i)
+			*slideSessions[i].newSlidesPriority = append(*slideSessions[i].newSlidesPriority, newIndex)
+		}
 	}
 }
 

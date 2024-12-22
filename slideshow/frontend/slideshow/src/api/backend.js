@@ -65,6 +65,7 @@ class BackendClient {
       showOnlyFavorites: store.showOnlyFavorites,
       showOnlyActive: store.showOnlyActive,
       showOnlyInTimeFrame: store.showOnlyInTimeFrame,
+      ShowNewImagesWithPriority: store.prioNewImages,
       modeRandom: store.modeRandom,
       modeChronological: store.modeChronological,
       modeReverseChronological: store.modeReverseChronological,
