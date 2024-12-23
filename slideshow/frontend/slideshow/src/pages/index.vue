@@ -20,8 +20,8 @@
     />
     <div v-if="showOverlay && slide" class="overlay">
       <p v-if="slide.Message">Message: {{ slide.Message }}</p>
-      <p>Send By: {{ slide.CreatedBy }}</p>
-      <p>Send At: {{ formattedCreatedAt }}</p>
+      <p>Sent By: {{ slide.CreatedBy }}</p>
+      <p>Sent At: {{ formattedCreatedAt }}</p>
     </div>
     <SideMenu :items="menuItems" :open="showActions" @trigger="menuTrigger" />
   </div>
