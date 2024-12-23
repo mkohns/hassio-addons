@@ -1,12 +1,16 @@
 <template>
-  <v-container class="d-flex align-center justify-center" style="height: 100vh">
-    <v-card width="80%">
+  <v-container
+    @click="goBack"
+    class="d-flex align-center justify-center"
+    style="height: 100vh"
+  >
+    <v-card width="50%">
       <v-card-title
         ><v-icon color="primary" class="mr-2">mdi-information</v-icon
         >Information</v-card-title
       >
-      <v-card-text v-if="info" class="mt-5">
-        <v-row>
+      <v-card-text v-if="info" class="mt-5 mb-5">
+        <v-row no-gutters>
           <v-col>
             <div class="list-item">
               <v-icon size="large" class="mr-2"
@@ -18,7 +22,7 @@
             <div class="list-item-value">{{ info.slidesCount }}</div>
           </v-col>
         </v-row>
-        <v-row>
+        <v-row no-gutters>
           <v-col>
             <div class="list-item">
               <v-icon size="large" class="mr-2">mdi-heart-outline</v-icon>Total
@@ -29,7 +33,7 @@
             <div class="list-item-value">{{ info.favoriteCount }}</div>
           </v-col>
         </v-row>
-        <v-row>
+        <v-row no-gutters>
           <v-col>
             <div class="list-item">
               <v-icon size="large" class="mr-2">mdi-eye-check-outline</v-icon
@@ -40,7 +44,7 @@
             <div class="list-item-value">{{ info.activeCount }}</div>
           </v-col>
         </v-row>
-        <v-row>
+        <v-row no-gutters>
           <v-col>
             <div class="list-item">
               <v-icon size="large" class="mr-2">mdi-database</v-icon>Total
@@ -53,7 +57,7 @@
             </div>
           </v-col>
         </v-row>
-        <v-row>
+        <v-row no-gutters>
           <v-col>
             <div class="list-item">
               <v-icon size="large" class="mr-2">mdi-database</v-icon>Total
@@ -66,7 +70,7 @@
             </div>
           </v-col>
         </v-row>
-        <v-row>
+        <v-row no-gutters>
           <v-col>
             <div class="list-item">
               <v-icon size="large" class="mr-2"
@@ -78,7 +82,7 @@
             <div class="list-item-value">{{ info.version }}</div>
           </v-col>
         </v-row>
-        <v-row>
+        <v-row no-gutters>
           <v-col>
             <div class="list-item">
               <v-icon size="large" class="mr-2">mdi-git</v-icon>Git Commit
@@ -88,7 +92,7 @@
             <div class="list-item-value">{{ info.gitCommit }}</div>
           </v-col>
         </v-row>
-        <v-row>
+        <v-row no-gutters>
           <v-col>
             <div class="list-item">
               <v-icon size="large" class="mr-2">mdi-ip-network-outline</v-icon
@@ -101,10 +105,6 @@
         </v-row>
       </v-card-text>
       <v-card-text v-if="error" class="mt-5"> {{ error }} </v-card-text>
-      <div class="mt-4 mb-4 d-flex">
-        <v-spacer></v-spacer>
-        <v-btn class="mr-3" color="primary" @click="goBack">Back</v-btn>
-      </div>
     </v-card>
   </v-container>
 </template>
@@ -156,11 +156,11 @@ const goBack = () => {
 <style scoped>
 .list-item {
   font-size: 1.2em;
-  padding: 10px;
+  padding: 5px;
 }
 .list-item-value {
   background-color: rgb(70, 70, 70);
   font-size: 1.2em;
-  padding: 10px;
+  padding: 5px;
 }
 </style>
