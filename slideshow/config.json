@@ -1,6 +1,6 @@
 {
   "name": "Signal Slideshow",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "slug": "signalslide",
   "description": "Signal Slideshow",
   "arch": ["armv7", "amd64", "aarch64"],
