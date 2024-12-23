@@ -1,20 +1,31 @@
 <template>
-  <div class="menu-container">
-    <SideMenuItem
-      v-for="item in itemsInternal"
-      :icon="item.icon"
-      :text="item.text"
-      :show="item.show"
-      :event="item.event"
-      class="item"
-      @trigger="eventTrigger"
-    ></SideMenuItem>
-  </div>
+  <transition name="slide-x">
+    <div v-if="props.open" class="menu-container">
+      <SideMenuItem
+        v-for="item in itemsInternal"
+        :key="item.text"
+        :icon="item.icon"
+        :text="item.text"
+        :event="item.event"
+        class="item"
+        @trigger="eventTrigger"
+      ></SideMenuItem>
+    </div>
+  </transition>
 </template>
 
 <script setup>
 import { ref, watch, computed, onMounted, onUnmounted } from "vue";
 import SideMenuItem from "./sideMenuItem.vue";
+import { VSlideXTransition } from "vuetify/components";
+
+onMounted(() => {
+  itemsInternal.value = props.items.map((item) => {
+    return {
+      ...item,
+    };
+  });
+});
 
 // Define emits
 const emit = defineEmits(["trigger"]);
@@ -37,14 +48,7 @@ function eventTrigger(evt) {
 
 const itemsInternal = ref([]);
 
-onMounted(() => {
-  itemsInternal.value = props.items.map((item) => {
-    return {
-      ...item,
-      show: undefined,
-    };
-  });
-});
+onMounted(() => {});
 
 // Watch the open prop
 watch(
@@ -52,19 +56,8 @@ watch(
   (newVal, oldVal) => {
     if (newVal) {
       console.log("Menu opened");
-      itemsInternal.value.forEach((item, index) => {
-        setTimeout(() => {
-          item.show = true;
-        }, index * 100);
-      });
-
-      // Perform actions when the menu is opened
     } else {
       console.log("Menu closed");
-      // Perform actions when the menu is closed
-      itemsInternal.value.forEach((item, index) => {
-        item.show = false;
-      });
     }
   }
 );
@@ -85,14 +78,26 @@ watch(
 <style scoped>
 .menu-container {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  left: 0; /* Adjust as needed */
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .item:first-child {
   border-radius: 0 50px 0 0;
 }
 .item:last-child {
   border-radius: 0 0 50px;
+}
+/* Custom slide transition */
+.slide-x-enter-active,
+.slide-x-leave-active {
+  transition: transform 1s ease;
+}
+.slide-x-enter-from,
+.slide-x-leave-to {
+  transform: translateX(-100%);
 }
 </style>

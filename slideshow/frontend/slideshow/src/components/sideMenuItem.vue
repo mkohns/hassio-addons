@@ -1,5 +1,5 @@
 <template>
-  <div @click="onClick" :class="classes">
+  <div @click="onClick" class="menu-item">
     <v-btn size="x-large" :icon="icon"></v-btn
     ><span class="menu-text ml-4">{{ text }}</span>
   </div>
@@ -12,21 +12,6 @@ function onClick(evt) {
   evt.stopPropagation();
   emit("trigger", props.event);
 }
-
-const classes = computed(() => {
-  if (props.show === undefined) {
-    return {
-      "menu-item": true,
-      "menu-hide": true,
-    };
-  }
-  return {
-    "menu-item": true,
-    animate__animated: true,
-    animate__slideInLeft: props.show ? true : false,
-    animate__slideOutLeft: props.show ? false : true,
-  };
-});
 
 // Define emits
 const emit = defineEmits(["trigger"]);
@@ -41,9 +26,6 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  show: {
-    required: true,
-  },
   event: {
     type: String,
     required: true,
@@ -55,9 +37,6 @@ const props = defineProps({
 .menu-item {
   background-color: rgba(255, 255, 255, 0.346);
   padding: 10px;
-}
-.menu-hide {
-  transform: translateX(-100%);
 }
 .menu-text {
   margin-left: 10px;
