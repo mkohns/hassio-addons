@@ -1,6 +1,6 @@
 <template>
   <v-container class="d-flex align-center justify-center" style="height: 100vh">
-    <v-card width="100%" max-height="95%">
+    <v-card width="100%" h>
       <div class="d-flex">
         <v-card-title
           ><v-icon color="primary" class="mr-2">mdi-cog</v-icon>Slideshow
@@ -16,7 +16,7 @@
         >
       </div>
       <v-card-text class="mt-5">
-        <v-container style="height: 70vh; overflow-y: auto">
+        <v-container style="height: 65vh; overflow-y: auto">
           <v-data-table
             :headers="headers"
             :items="filteredslides"
