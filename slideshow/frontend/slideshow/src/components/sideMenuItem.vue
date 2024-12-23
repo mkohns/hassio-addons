@@ -1,6 +1,6 @@
 <template>
   <div @click="onClick" class="menu-item">
-    <v-btn size="x-large" :icon="icon"></v-btn
+    <v-btn color="primary" size="x-large" :icon="icon"></v-btn
     ><span class="menu-text ml-4">{{ text }}</span>
   </div>
 </template>
@@ -35,7 +35,7 @@ const props = defineProps({
 
 <style scoped>
 .menu-item {
-  background-color: rgba(255, 255, 255, 0.346);
+  background-color: rgb(0 0 0 / 73%);
   padding: 10px;
 }
 .menu-text {
