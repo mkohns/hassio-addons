@@ -83,12 +83,12 @@
           </v-col>
         </v-row>
         <v-row no-gutters>
-          <v-col>
+          <v-col cols="6">
             <div class="list-item">
               <v-icon size="large" class="mr-2">mdi-git</v-icon>Git Commit
             </div>
           </v-col>
-          <v-col>
+          <v-col cols="6">
             <div class="list-item-value">{{ info.gitCommit }}</div>
           </v-col>
         </v-row>
@@ -162,5 +162,8 @@ const goBack = () => {
   background-color: rgb(70, 70, 70);
   font-size: 1.2em;
   padding: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
