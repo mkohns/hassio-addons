@@ -112,11 +112,11 @@ func connectToWebSocket(socketURL, username, password string) {
 						session := getSession("")
 
 						if err == nil && session.LastConfig != nil && imageOrientation != session.LastConfig.PortraitMode {
-							currentMode := "Portrait"
+							currentMode := "portrait"
 							if !session.LastConfig.PortraitMode {
-								currentMode = "Landscape"
+								currentMode = "landscape"
 							}
-							sendMessage("The image is in wrong orientation 👎. Current mode: " + currentMode)
+							sendMessage("The image is in wrong orientation 👎. Image should be " + currentMode)
 							sendReaction(msg, "👎")
 						} else {
 							sendReaction(msg, "🚀")
