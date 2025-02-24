@@ -17,6 +17,7 @@ export const useSlideshowStore = defineStore("slideshow", {
     startDate: null,
     endDate: null,
     portraitMode: false,
+    coverMode: false,
   }),
   persist: true, // Enable persistence
   actions: {
@@ -58,6 +59,9 @@ export const useSlideshowStore = defineStore("slideshow", {
     },
     setPortraitMode(value) {
       this.portraitMode = value;
+    },
+    setCoverMode(value) {
+      this.coverMode = value;
     },
   },
 });

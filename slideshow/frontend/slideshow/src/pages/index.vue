@@ -10,13 +10,13 @@
       ref="img1"
       style="opacity: 0"
       :src="imageUrl1"
-      class="full-size-image"
+      :class="getImageClass()"
     />
     <img
       ref="img2"
       style="opacity: 0"
       :src="imageUrl2"
-      class="full-size-image"
+      :class="getImageClass()"
     />
     <div v-if="showOverlay && slide" class="overlay">
       <p v-if="slide.Message">Message: {{ slide.Message }}</p>
@@ -103,6 +103,14 @@ const error = ref(null);
 const currentImage = ref(1);
 
 const showActions = ref(false);
+
+function getImageClass() {
+  if (store.coverMode) {
+    return "full-size-image-cover";
+  } else {
+    return "full-size-image-contain";
+  }
+}
 
 function toggleActions() {
   if (!showActions.value) {
@@ -321,10 +329,20 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.full-size-image {
+.full-size-image-contain {
   width: 100vw;
   height: 100vh;
   object-fit: contain;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: opacity 4s ease-in-out;
+}
+
+.full-size-image-cover {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
   position: absolute;
   top: 0;
   left: 0;

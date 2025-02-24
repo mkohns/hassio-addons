@@ -68,6 +68,13 @@
               v-model="newchip"
             >
             </v-switch>
+            <v-switch
+              hide-details
+              color="primary"
+              label="Cover Mode"
+              v-model="coverMode"
+            >
+            </v-switch>
           </v-col>
           <v-col>
             <v-switch
@@ -209,6 +216,7 @@ const modeReverseChronological = ref(store.modeReverseChronological);
 const startDate = ref(store.startDate);
 const endDate = ref(store.endDate);
 const portraitMode = ref(store.portraitMode);
+const coverMode = ref(store.coverMode);
 
 const intervalDialog = ref(false);
 
@@ -241,6 +249,7 @@ const saveConfig = () => {
   store.setModeChronological(modeChronological.value);
   store.setModeReverseChronological(modeReverseChronological.value);
   store.setPortraitMode(portraitMode.value);
+  store.setCoverMode(coverMode.value);
 
   if (showOnlyInTimeFrame.value && startDate.value == null) {
     showOnlyInTimeFrame.value = false;
