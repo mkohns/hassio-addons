@@ -4,12 +4,12 @@ import { en } from "vuetify/locale";
 
 export const useSlideshowStore = defineStore("slideshow", {
   state: () => ({
-    interval: 5,
+    interval: 10,
     showOverlay: true,
-    showNewChip: false,
+    showNewChip: true,
     showOnlyFavorites: false,
-    showOnlyActive: false,
-    prioNewImages: false,
+    showOnlyActive: true,
+    prioNewImages: true,
     showOnlyInTimeFrame: false,
     modeRandom: true,
     modeChronological: false,

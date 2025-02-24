@@ -22,6 +22,7 @@
             :items="filteredslides"
             item-value="AttachmentID"
             hide-default-footer
+            items-per-page="-1"
             class="elevation-1"
           >
             <template #item.TumbnailURL="{ item }">
